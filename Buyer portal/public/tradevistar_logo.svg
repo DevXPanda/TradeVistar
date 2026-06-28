@@ -1,0 +1,5 @@
+<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 5L25 35L40 5" fill="none" stroke="#0F172A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 5L17.5 20L25 5" fill="none" stroke="#F97316" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="50" y="28" font-family="Inter, sans-serif" font-weight="700" font-size="24" fill="#0F172A">TradeVistar</text>
+</svg>
