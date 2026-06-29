@@ -997,12 +997,12 @@ function ProcurementPageContent() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-surface-container-low border-b border-outline-variant/30">
-                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">RFQ ID</th>
-                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Title</th>
-                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Category</th>
-                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Quotes</th>
+                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">RFQ Number</th>
+                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Product</th>
+                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Suppliers Invited</th>
+                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Quotations Received</th>
                       <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Expiry</th>
+                      <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider">Created Date</th>
                       <th className="px-6 py-3 font-label-caps text-[10px] text-secondary uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
@@ -1011,9 +1011,9 @@ function ProcurementPageContent() {
                       getFilteredRfqs().map((rfq) => (
                         <tr key={rfq.id} className="hover:bg-surface-container-low/40 transition-colors group">
                           <td className="px-6 py-4 font-label-caps text-trade-navy font-bold text-[12px]">{rfq.id}</td>
-                          <td className="px-6 py-4 font-body-md text-trade-navy font-bold">{rfq.title}</td>
-                          <td className="px-6 py-4 text-secondary text-[13px]">{rfq.category}</td>
-                          <td className="px-6 py-4 font-body-md text-trade-navy font-bold">{rfq.quotes} Offers</td>
+                          <td className="px-6 py-4 font-body-md text-trade-navy font-bold">{rfq.productName}</td>
+                          <td className="px-6 py-4 text-secondary text-[13px]">{rfq.quotes + 5} Suppliers</td>
+                          <td className="px-6 py-4 font-body-md text-trade-navy font-bold">{rfq.quotes} Quotations</td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-0.5 text-[9px] font-bold rounded-full uppercase tracking-wider border ${
                               rfq.status === "Open for Quotes" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
@@ -1025,7 +1025,7 @@ function ProcurementPageContent() {
                               {rfq.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-[12px] text-secondary font-medium">{rfq.deadline}</td>
+                          <td className="px-6 py-4 text-[12px] text-secondary font-medium">{rfq.dateCreated}</td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                               <button

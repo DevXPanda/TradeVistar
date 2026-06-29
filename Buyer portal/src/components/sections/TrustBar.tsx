@@ -2,7 +2,7 @@
 
 export default function TrustBar() {
   return (
-    <section className="bg-trade-orange py-s-md px-s-md">
+    <section className="bg-trade-orange py-2.5 px-s-md">
       <div className="max-w-s-container-max mx-auto flex flex-row flex-nowrap overflow-x-auto justify-between items-center gap-s-md hide-scrollbar w-full text-white">
         {/* Fast Delivery */}
         <div className="flex items-center gap-s-sm shrink-0">

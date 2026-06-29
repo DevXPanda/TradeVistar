@@ -1,11 +1,9 @@
 import TopNavBar from "@/components/sections/TopNavBar";
 import Hero from "@/components/sections/Hero";
 import TrustBar from "@/components/sections/TrustBar";
-import HowItWorks from "@/components/sections/HowItWorks";
-import DualEntry from "@/components/sections/DualEntry";
+// import HowItWorks from "@/components/sections/HowItWorks";
+import Marketplace from "@/components/sections/Marketplace";
 import CapabilitiesGrid from "@/components/sections/CapabilitiesGrid";
-import IndustryFocus from "@/components/sections/IndustryFocus";
-import AiTradeIntel from "@/components/sections/AiTradeIntel";
 import DashboardShowcase from "@/components/sections/DashboardShowcase";
 import Metrics from "@/components/sections/Metrics";
 import TradeAssurance from "@/components/sections/TradeAssurance";
@@ -19,11 +17,9 @@ export default function Home() {
       <main className="flex-grow">
         <Hero />
         <TrustBar />
-        <HowItWorks />
-        <DualEntry />
+        {/* <HowItWorks /> */}
+        <Marketplace />
         <CapabilitiesGrid />
-        <IndustryFocus />
-        <AiTradeIntel />
         <DashboardShowcase />
         <Metrics />
         <TradeAssurance />

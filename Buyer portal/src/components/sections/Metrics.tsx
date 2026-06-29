@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 const metrics = [
-  { value: "$4.2B+", label: "Trade Volume Facilitated" },
+  { value: "₹35,000 Cr+", label: "Trade Volume Facilitated" },
   { value: "85k+", label: "Verified Suppliers" },
   { value: "120+", label: "Countries Active" },
   { value: "99.9%", label: "Transaction Security" },
