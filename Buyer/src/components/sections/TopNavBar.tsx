@@ -1,89 +1,312 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function TopNavBar() {
+  const [searchVal, setSearchVal] = useState("");
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+  const navLinks = [
+    { name: "Home", href: "/", hasDropdown: false },
+    { name: "Brand", href: "#popular-brands-section", hasDropdown: false },
+    { name: "Offers", href: "#", hasDropdown: true },
+    { name: "Publication House", href: "#", hasDropdown: false },
+    { name: "All Vendors", href: "#", hasDropdown: false },
+    { name: "Vendor Zone", href: "#", hasDropdown: true },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 glass border-b border-outline-variant/30 px-s-md py-s-xs">
-      <div className="max-w-s-container-max mx-auto flex justify-between items-center h-16">
-        <div className="flex items-center gap-s-lg">
-          <Link href="/" className="flex items-center">
-            <Image
-              alt="TradeVistar Logo"
-              className="h-8 w-auto"
-              src="/logo/tradevistar.png"
-              width={28}
-              height={32}
-              priority
-            />
-          </Link>
-          <div className="hidden lg:flex items-center gap-s-md">
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
+    <nav className="fixed top-0 left-0 w-full z-50 shadow-sm border-b border-outline-variant/15 flex flex-col">
+      {/* 1. Main Navbar (White Background) */}
+      <div className="bg-white h-[72px] px-s-md flex items-center border-b border-outline-variant/10">
+        <div className="max-w-s-container-max mx-auto w-full flex justify-between items-center gap-4">
+          
+          {/* Logo & Brand / Hamburger Menu */}
+          <div className="flex items-center flex-shrink-0">
+            {/* Hamburger Button (Mobile only) */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="md:hidden bg-slate-50 hover:bg-slate-100 text-trade-navy rounded-full w-10 h-10 flex items-center justify-center cursor-pointer transition-colors focus:outline-none mr-2 flex-shrink-0"
             >
-              Solutions
-            </Link>
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
-            >
-              Industries
-            </Link>
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
-            >
-              Suppliers
-            </Link>
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
-            >
-              Buyers
-            </Link>
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
-            >
-              Pricing
-            </Link>
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
-            >
-              Resources
-            </Link>
-            <Link
-              className="text-secondary hover:text-trade-navy font-medium font-label-sm transition-colors"
-              href="#"
-            >
-              About Us
+              <span className="material-symbols-outlined text-[22px]">menu</span>
+            </button>
+
+            {/* Logo Image */}
+            <Link href="/" className="flex items-center flex-shrink-0">
+              <Image
+                alt="TradeVistar Logo"
+                className="h-8 w-auto object-contain"
+                src="/logo/tradevistar.png"
+                width={140}
+                height={32}
+                priority
+              />
             </Link>
           </div>
-        </div>
-        <div className="flex items-center gap-s-sm">
-          <Link
-            className="hidden md:block font-label-sm font-bold text-trade-navy px-s-md py-2 transition-opacity active:opacity-80"
-            href="/login"
-          >
-            Login
-          </Link>
-          <Link
-            className="hidden lg:block font-label-sm font-bold text-secondary border border-outline-variant px-s-md py-2 rounded-lg hover:bg-surface-variant transition-colors"
-            href="/register?role=supplier"
-          >
-            Become a Seller
-          </Link>
-          <Link
-            className="font-label-sm font-bold bg-trade-orange text-white px-s-md py-2 rounded-lg hover:bg-trade-orange/90 transition-all active:scale-95 shadow-sm"
-            href="/login?role=buyer"
-          >
-            Become Buyer
-          </Link>
+
+          {/* Search Box (Centered - Desktop only) */}
+          <div className="hidden md:flex flex-grow max-w-[500px] mx-6">
+            <div className="flex w-full border border-trade-orange rounded-lg overflow-hidden transition-colors">
+              <input
+                type="text"
+                placeholder="Search for items..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                className="flex-grow px-4 py-2 text-[13px] text-trade-navy bg-slate-50/50 outline-none placeholder:text-secondary/50 font-medium"
+              />
+              <button className="bg-trade-orange hover:bg-trade-navy text-white px-5 flex items-center justify-center transition-colors cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">search</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Action Icons - Desktop */}
+          <div className="hidden md:flex items-center gap-4">
+            
+            {/* Wishlist */}
+            <div className="bg-slate-50 hover:bg-slate-100 transition-colors rounded-full w-10 h-10 flex items-center justify-center relative cursor-pointer">
+              <span className="material-symbols-outlined text-trade-navy text-[20px]">favorite</span>
+              <span className="absolute top-[-2px] right-[-2px] bg-trade-orange text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center border border-white">
+                0
+              </span>
+            </div>
+
+            {/* Profile */}
+            <Link
+              href="/buyerportal/profile"
+              className="bg-slate-50 hover:bg-slate-100 transition-colors rounded-full w-10 h-10 flex items-center justify-center cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-trade-navy text-[20px]">person</span>
+            </Link>
+
+            {/* Cart Icon & Info */}
+            <div className="flex items-center">
+              <div className="bg-slate-50 hover:bg-slate-100 transition-colors rounded-full w-10 h-10 flex items-center justify-center relative cursor-pointer flex-shrink-0">
+                <span className="material-symbols-outlined text-trade-navy text-[20px]">shopping_cart</span>
+                <span className="absolute top-[-2px] right-[-2px] bg-trade-orange text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center border border-white">
+                  0
+                </span>
+              </div>
+              <div className="hidden lg:flex flex-col text-left leading-none text-[11px] select-none ml-2 gap-0.5">
+                <span className="text-secondary font-semibold">My cart</span>
+                <span className="text-trade-navy font-black flex items-center">
+                  ₹0.00 <span className="material-symbols-outlined text-[11px] ml-0.5 font-bold">keyboard_arrow_down</span>
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right Action Icons - Mobile */}
+          <div className="flex md:hidden items-center gap-2">
+            
+            {/* Search Icon Toggle */}
+            <button
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              className="bg-slate-50 hover:bg-slate-100 text-trade-navy rounded-full w-10 h-10 flex items-center justify-center cursor-pointer transition-colors focus:outline-none"
+            >
+              <span className="material-symbols-outlined text-[20px]">search</span>
+            </button>
+
+            {/* Profile */}
+            <Link
+              href="/buyerportal/profile"
+              className="bg-slate-50 hover:bg-slate-100 text-trade-navy rounded-full w-10 h-10 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">person</span>
+            </Link>
+
+            {/* Cart Icon & Badge */}
+            <div className="bg-slate-50 hover:bg-slate-100 text-trade-navy rounded-full w-10 h-10 flex items-center justify-center relative cursor-pointer transition-colors flex-shrink-0">
+              <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
+              <span className="absolute top-[-2px] right-[-2px] bg-trade-orange text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center border border-white">
+                0
+              </span>
+            </div>
+
+          </div>
+
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      {showMobileSearch && (
+        <div className="md:hidden bg-white px-4 py-2 border-b border-outline-variant/10">
+          <div className="flex w-full border border-trade-orange rounded-lg overflow-hidden transition-colors">
+            <input
+              type="text"
+              placeholder="Search for items..."
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
+              className="flex-grow px-4 py-2 text-[13px] text-trade-navy bg-slate-50/50 outline-none placeholder:text-secondary/50 font-medium"
+            />
+            <button className="bg-trade-orange hover:bg-trade-navy text-white px-5 flex items-center justify-center transition-colors cursor-pointer">
+              <span className="material-symbols-outlined text-[18px]">search</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Sub-Navbar (Orange Background - Desktop only) */}
+      <div className="hidden md:flex bg-trade-orange h-[46px] px-s-md items-center">
+        <div className="max-w-s-container-max mx-auto w-full flex justify-between items-center h-full">
+          
+          {/* Left Block: Categories Dropdown & Links */}
+          <div className="flex items-center gap-6 h-full">
+            
+            {/* Categories Dropdown Button */}
+            <div className="relative h-full flex items-center">
+              <button
+                onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+                className="bg-white text-trade-navy rounded-t-lg px-4 h-full flex items-center gap-2 font-black uppercase text-[11.5px] tracking-wide border-x border-t border-outline-variant/10 cursor-pointer shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[16px] font-bold">grid_view</span>
+                <span>Categories</span>
+                <span className="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>
+              </button>
+
+              {/* Mock Dropdown items */}
+              {showCategoryMenu && (
+                <div className="absolute left-0 top-[46px] w-[200px] bg-white border border-outline-variant/15 rounded-b-xl shadow-lg z-50 py-2">
+                  <Link
+                    href="#category-collections-section"
+                    onClick={() => setShowCategoryMenu(false)}
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                  >
+                    Women&apos;s Fashion
+                  </Link>
+                  <Link
+                    href="#category-collections-section"
+                    onClick={() => setShowCategoryMenu(false)}
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                  >
+                    Men&apos;s Fashion
+                  </Link>
+                  <Link
+                    href="#category-collections-section"
+                    onClick={() => setShowCategoryMenu(false)}
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                  >
+                    Phone & Gadgets
+                  </Link>
+                  <Link
+                    href="#category-collections-section"
+                    onClick={() => setShowCategoryMenu(false)}
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                  >
+                    Home & Kitchen
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Navigation links */}
+            <div className="hidden lg:flex items-center gap-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-white/95 hover:text-trade-navy text-[12px] font-black uppercase tracking-wide flex items-center gap-0.5 transition-colors cursor-pointer"
+                >
+                  <span>{link.name}</span>
+                  {link.hasDropdown && (
+                    <span className="material-symbols-outlined text-[12px]">keyboard_arrow_down</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      {/* Mobile Sidebar Navigation Drawer */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 transition-opacity"
+            onClick={() => setShowMobileMenu(false)}
+          />
+
+          {/* Drawer Content */}
+          <div className="relative flex w-full max-w-xs flex-col bg-white pb-12 shadow-xl z-50 h-full">
+            <div className="flex px-4 pt-5 pb-2 items-center justify-between">
+              <div className="flex items-center">
+                <Image
+                  alt="TradeVistar Logo"
+                  className="h-8 w-auto object-contain"
+                  src="/logo/tradevistar.png"
+                  width={140}
+                  height={32}
+                  priority
+                />
+              </div>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-md p-2 text-trade-navy hover:bg-slate-100 focus:outline-none"
+                onClick={() => setShowMobileMenu(false)}
+              >
+                <span className="material-symbols-outlined text-[24px]">close</span>
+              </button>
+            </div>
+
+            {/* Links */}
+            <div className="mt-4 px-4 py-6 space-y-6 border-t border-slate-100 overflow-y-auto flex-grow">
+              <div className="flex flex-col gap-4">
+                <div className="font-bold text-xs uppercase text-secondary tracking-wider">Categories</div>
+                <Link
+                  href="#category-collections-section"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                >
+                  Women&apos;s Fashion
+                </Link>
+                <Link
+                  href="#category-collections-section"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                >
+                  Men&apos;s Fashion
+                </Link>
+                <Link
+                  href="#category-collections-section"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                >
+                  Phone & Gadgets
+                </Link>
+                <Link
+                  href="#category-collections-section"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                >
+                  Home & Kitchen
+                </Link>
+              </div>
+
+              <div className="border-t border-slate-100 pt-6 flex flex-col gap-4">
+                <div className="font-bold text-xs uppercase text-secondary tracking-wider">Navigation</div>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setShowMobileMenu(false)}
+                    className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange uppercase"
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

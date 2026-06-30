@@ -4,63 +4,86 @@ import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { Product, MOCK_PRODUCTS } from "@/data/products";
+import ProductCard from "@/components/products/ProductCard";
+import FilterSection from "@/components/common/FilterSection";
 
 export default function Marketplace() {
-  // States for filters
-  const [searchType, setSearchType] = useState<"product" | "supplier" | "company">("product");
+  // Navigation tabs for Search Type
+  const [searchType, setSearchType] = useState<"product" | "supplier" | "manufacturer" | "company">("product");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
-  const [sortOption, setSortOption] = useState<string>("popular");
 
-  // Sidebar Filter States
+  // Toolbar Quick Filters
+  const [toolbarCategory, setToolbarCategory] = useState("All Categories");
+  const [toolbarIndustry, setToolbarIndustry] = useState("All Industries");
+  const [toolbarLocation, setToolbarLocation] = useState("All Locations");
+
+  // Layout View Mode (Grid vs List)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Sidebar Filter Collapse States
+  const [collapsedFilters, setCollapsedFilters] = useState<Record<string, boolean>>({
+    categories: false,
+    industry: false,
+    location: false,
+    supplierType: false,
+    moq: false,
+    priceRange: false,
+    verification: false,
+    rating: false,
+    delivery: false,
+    shipping: false,
+  });
+
+  // Sidebar Filter Values
   const [filterCategory, setFilterCategory] = useState<string[]>([]);
   const [filterIndustry, setFilterIndustry] = useState<string[]>([]);
+  const [country, setCountry] = useState("India");
+  const [state, setState] = useState("All States");
+  const [city, setCity] = useState("All Cities");
+  const [supplierTypes, setSupplierTypes] = useState<string[]>([]); // Manufacturer, Wholesaler, Exporter
+  const [moqInput, setMoqInput] = useState<string>("");
   const [priceMin, setPriceMin] = useState<string>("");
   const [priceMax, setPriceMax] = useState<string>("");
-  const [moqValue, setMoqValue] = useState<string>("");
-  const [country, setCountry] = useState<string>("India");
-  const [state, setState] = useState<string>("All States");
-  const [city, setCity] = useState<string>("All Cities");
-  const [supplierTypes, setSupplierTypes] = useState<string[]>([]);
   
-  // Verification Checks
+  // Badges & Verifications
   const [tradeAssurance, setTradeAssurance] = useState(false);
-  const [gstVerified, setGstVerified] = useState(false);
-  const [msme, setMsme] = useState(false);
-  const [isoCertified, setIsoCertified] = useState(false);
   const [readyStock, setReadyStock] = useState(false);
+  const [gstVerified, setGstVerified] = useState(false);
+  const [isoCertified, setIsoCertified] = useState(false);
+  const [msmeVerified, setMsmeVerified] = useState(false);
   
   const [minRating, setMinRating] = useState<number | null>(null);
   const [maxDeliveryTime, setMaxDeliveryTime] = useState<number | null>(null);
+  const [shippingMethod, setShippingMethod] = useState<string[]>([]);
 
-  // Mobile sidebar filter visible state
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  // Sorting Option
+  const [sortOption, setSortOption] = useState<string>("popular");
 
-  // Infinite scroll states
-  const [visibleCount, setVisibleCount] = useState(8);
-  const observerRef = React.useRef<HTMLDivElement | null>(null);
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // Standard grid is 5 cols, so multiples of 5 fit best!
+
+  // Auth/Action Modals
   const [authModalOpen, setAuthModalOpen] = useState(false);
-
-  // Mock Actions Modal States
   const [activeModal, setActiveModal] = useState<{
     type: "details" | "buy" | "quote" | "chat" | null;
     product: Product | null;
   }>({ type: null, product: null });
 
-  const modalProduct = activeModal.product;
-
-  // Custom mock values for request modal
+  // Input states inside modals
   const [quoteQty, setQuoteQty] = useState("");
   const [quotePrice, setQuotePrice] = useState("");
-  const [chatMessage, setChatMessage] = useState("");
   const [buyQty, setBuyQty] = useState("");
+  const [chatMessage, setChatMessage] = useState("");
 
-  // Extracted unique metadata dynamically for filter dropdowns
+  const modalProduct = activeModal.product;
+
+  // Constants lists
   const categoriesList = ["Construction Materials", "Electronics & Electrical", "Machinery & Tools", "Chemicals & Plastics", "Textile & Apparel", "Packaging & Paper"];
   const industriesList = ["Infrastructure", "Manufacturing", "Agriculture"];
   const statesList = ["All States", "Maharashtra", "Gujarat", "Karnataka", "Tamil Nadu", "Delhi", "Uttar Pradesh", "West Bengal", "Punjab"];
+  
   const citiesList = useMemo(() => {
     if (state === "All States") return ["All Cities"];
     const cities: Record<string, string[]> = {
@@ -76,50 +99,114 @@ export default function Marketplace() {
     return cities[state] || ["All Cities"];
   }, [state]);
 
-  // Filter and Sort Logic
+  const toggleCollapsed = (section: string) => {
+    setCollapsedFilters((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const toggleFilterCategory = (cat: string) => {
+    setFilterCategory((prev) =>
+      prev.includes(cat) ? prev.filter((item) => item !== cat) : [...prev, cat]
+    );
+    setCurrentPage(1);
+  };
+
+  const toggleFilterIndustry = (ind: string) => {
+    setFilterIndustry((prev) =>
+      prev.includes(ind) ? prev.filter((item) => item !== ind) : [...prev, ind]
+    );
+    setCurrentPage(1);
+  };
+
+  const toggleSupplierType = (type: string) => {
+    setSupplierTypes((prev) =>
+      prev.includes(type) ? prev.filter((item) => item !== type) : [...prev, type]
+    );
+    setCurrentPage(1);
+  };
+
+  const toggleShippingMethod = (method: string) => {
+    setShippingMethod((prev) =>
+      prev.includes(method) ? prev.filter((item) => item !== method) : [...prev, method]
+    );
+    setCurrentPage(1);
+  };
+
+  // Reset Filters
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setToolbarCategory("All Categories");
+    setToolbarIndustry("All Industries");
+    setToolbarLocation("All Locations");
+    setFilterCategory([]);
+    setFilterIndustry([]);
+    setCountry("India");
+    setState("All States");
+    setCity("All Cities");
+    setSupplierTypes([]);
+    setMoqInput("");
+    setPriceMin("");
+    setPriceMax("");
+    setTradeAssurance(false);
+    setReadyStock(false);
+    setGstVerified(false);
+    setIsoCertified(false);
+    setMsmeVerified(false);
+    setMinRating(null);
+    setMaxDeliveryTime(null);
+    setShippingMethod([]);
+    setSortOption("popular");
+    setCurrentPage(1);
+  };
+
+  // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     let result = MOCK_PRODUCTS;
 
-    // Search query B2B filtering
+    // Search query
     if (searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       if (searchType === "product") {
-        result = result.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+        result = result.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
       } else if (searchType === "supplier") {
-        result = result.filter(p => p.supplierName.toLowerCase().includes(query));
+        result = result.filter(p => p.supplierName.toLowerCase().includes(q));
+      } else if (searchType === "manufacturer") {
+        result = result.filter(p => p.supplierName.toLowerCase().includes(q) && p.supplierType === "Manufacturer");
       } else if (searchType === "company") {
-        result = result.filter(p => p.supplierName.toLowerCase().includes(query));
+        result = result.filter(p => p.supplierName.toLowerCase().includes(q));
       }
     }
 
-    // Category Dropdown / Sidebar Category Multi-select
-    if (selectedCategory !== "All Categories") {
-      result = result.filter(p => p.category === selectedCategory);
-    } else if (filterCategory.length > 0) {
+    // Search Type specific database filter overrides
+    if (searchType === "manufacturer") {
+      result = result.filter(p => p.supplierType === "Manufacturer");
+    }
+
+    // Toolbar Category Dropdown
+    if (toolbarCategory !== "All Categories") {
+      result = result.filter(p => p.category === toolbarCategory);
+    }
+    // Sidebar Categories (multi-select fallback if toolbar category is not set)
+    else if (filterCategory.length > 0) {
       result = result.filter(p => filterCategory.includes(p.category));
     }
 
-    // Industry multi-select
-    if (filterIndustry.length > 0) {
+    // Toolbar Industry Dropdown
+    if (toolbarIndustry !== "All Industries") {
+      result = result.filter(p => p.industry === toolbarIndustry);
+    }
+    // Sidebar Industry
+    else if (filterIndustry.length > 0) {
       result = result.filter(p => filterIndustry.includes(p.industry));
     }
 
-    // Price filtering
-    if (priceMin !== "") {
-      result = result.filter(p => p.priceMin >= parseFloat(priceMin));
-    }
-    if (priceMax !== "") {
-      result = result.filter(p => p.priceMax <= parseFloat(priceMax));
+    // Toolbar Location Dropdown
+    if (toolbarLocation !== "All Locations") {
+      result = result.filter(p => p.state === toolbarLocation || p.city === toolbarLocation);
     }
 
-    // MOQ filtering
-    if (moqValue !== "") {
-      result = result.filter(p => p.moq <= parseInt(moqValue));
-    }
-
-    // Location filtering
+    // Sidebar Location Filters
     if (country !== "All" && country !== "") {
-      result = result.filter(p => p.country === country);
+      result = result.filter(p => p.country.toLowerCase() === country.toLowerCase());
     }
     if (state !== "All States") {
       result = result.filter(p => p.state === state);
@@ -128,208 +215,196 @@ export default function Marketplace() {
       result = result.filter(p => p.city === city);
     }
 
-    // Supplier Type Checkboxes
+    // Sidebar Supplier Types
     if (supplierTypes.length > 0) {
       result = result.filter(p => supplierTypes.includes(p.supplierType));
     }
 
-    // Badges Checkboxes
+    // MOQ
+    if (moqInput !== "") {
+      const parsedMoq = parseInt(moqInput);
+      if (!isNaN(parsedMoq)) {
+        result = result.filter(p => p.moq <= parsedMoq);
+      }
+    }
+
+    // Price Range
+    if (priceMin !== "") {
+      const parsedMin = parseFloat(priceMin);
+      if (!isNaN(parsedMin)) {
+        result = result.filter(p => p.priceMin >= parsedMin);
+      }
+    }
+    if (priceMax !== "") {
+      const parsedMax = parseFloat(priceMax);
+      if (!isNaN(parsedMax)) {
+        result = result.filter(p => p.priceMax <= parsedMax);
+      }
+    }
+
+    // Badges / Availability
     if (tradeAssurance) {
       result = result.filter(p => p.tradeAssurance);
-    }
-    if (gstVerified) {
-      result = result.filter(p => p.gstVerified);
-    }
-    if (msme) {
-      result = result.filter(p => p.msme);
-    }
-    if (isoCertified) {
-      result = result.filter(p => p.isoCertified);
     }
     if (readyStock) {
       result = result.filter(p => p.readyStock);
     }
+    if (gstVerified) {
+      result = result.filter(p => p.gstVerified);
+    }
+    if (isoCertified) {
+      result = result.filter(p => p.isoCertified);
+    }
+    if (msmeVerified) {
+      result = result.filter(p => p.msme);
+    }
 
-    // Rating
+    // Ratings
     if (minRating !== null) {
       result = result.filter(p => p.supplierRating >= minRating);
     }
 
-    // Delivery time
+    // Delivery Days
     if (maxDeliveryTime !== null) {
       result = result.filter(p => p.deliveryTime <= maxDeliveryTime);
     }
 
-    // Sorting
+    // Shipping Methods
+    if (shippingMethod.length > 0) {
+      result = result.filter(p => 
+        p.shippingInfo && p.shippingInfo.methods.some(m => 
+          shippingMethod.some(sm => m.toLowerCase().includes(sm.toLowerCase()))
+        )
+      );
+    }
+
+    // Sorting Options
     const sorted = [...result];
-    if (sortOption === "price_low") {
+    if (sortOption === "popular") {
+      // Keep mock database weight
+      sorted.sort((a, b) => b.supplierRating - a.supplierRating);
+    } else if (sortOption === "latest") {
+      sorted.sort((a, b) => b.id.localeCompare(a.id));
+    } else if (sortOption === "moq_low") {
+      sorted.sort((a, b) => a.moq - b.moq);
+    } else if (sortOption === "price_low") {
       sorted.sort((a, b) => a.priceMin - b.priceMin);
     } else if (sortOption === "price_high") {
       sorted.sort((a, b) => b.priceMax - a.priceMax);
-    } else if (sortOption === "moq_low") {
-      sorted.sort((a, b) => a.moq - b.moq);
     } else if (sortOption === "rating") {
       sorted.sort((a, b) => b.supplierRating - a.supplierRating);
-    } // "popular" uses default database order
+    }
 
     return sorted;
   }, [
-    searchType, searchQuery, selectedCategory, sortOption,
-    filterCategory, filterIndustry, priceMin, priceMax, moqValue,
-    country, state, city, supplierTypes, tradeAssurance,
-    gstVerified, msme, isoCertified, readyStock, minRating, maxDeliveryTime
+    searchType, searchQuery, toolbarCategory, toolbarIndustry, toolbarLocation,
+    filterCategory, filterIndustry, country, state, city, supplierTypes,
+    moqInput, priceMin, priceMax, tradeAssurance, readyStock, gstVerified,
+    isoCertified, msmeVerified, minRating, maxDeliveryTime, shippingMethod, sortOption
   ]);
 
-  // Visible products list based on infinite scroll visibleCount
-  const visibleProducts = useMemo(() => {
-    return filteredProducts.slice(0, visibleCount);
-  }, [filteredProducts, visibleCount]);
+  // Paginated Products
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredProducts.slice(startIndex, startIndex + pageSize);
+  }, [filteredProducts, currentPage, pageSize]);
 
-  // Reset visible count on filter updates (asynchronously to avoid React cascading render warnings)
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setVisibleCount(8);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [
-    searchType, searchQuery, selectedCategory, sortOption,
-    filterCategory, filterIndustry, priceMin, priceMax, moqValue,
-    country, state, city, supplierTypes, tradeAssurance,
-    gstVerified, msme, isoCertified, readyStock, minRating, maxDeliveryTime
-  ]);
+  // Total pages calculation
+  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
 
-  // Infinite scroll intersection observer setup
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visibleCount < filteredProducts.length) {
-          setVisibleCount((prev) => Math.min(prev + 8, filteredProducts.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentSentinel = observerRef.current;
-    if (currentSentinel) {
-      observer.observe(currentSentinel);
-    }
-
-    return () => {
-      if (currentSentinel) {
-        observer.unobserve(currentSentinel);
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      // Scroll smoothly to top of content toolbar
+      const toolbarElement = document.getElementById("marketplace-toolbar-anchor");
+      if (toolbarElement) {
+        toolbarElement.scrollIntoView({ behavior: "smooth" });
       }
-    };
-  }, [visibleCount, filteredProducts.length]);
-
-  const toggleCategoryFilter = (catName: string) => {
-    setFilterCategory(prev =>
-      prev.includes(catName) ? prev.filter(c => c !== catName) : [...prev, catName]
-    );
-  };
-
-  const toggleIndustryFilter = (indName: string) => {
-    setFilterIndustry(prev =>
-      prev.includes(indName) ? prev.filter(i => i !== indName) : [...prev, indName]
-    );
-  };
-
-  const toggleSupplierTypeFilter = (type: string) => {
-    setSupplierTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    );
-  };
-
-  // Reset all filters
-  const resetFilters = () => {
-    setFilterCategory([]);
-    setFilterIndustry([]);
-    setPriceMin("");
-    setPriceMax("");
-    setMoqValue("");
-    setCountry("India");
-    setState("All States");
-    setCity("All Cities");
-    setSupplierTypes([]);
-    setTradeAssurance(false);
-    setGstVerified(false);
-    setMsme(false);
-    setIsoCertified(false);
-    setReadyStock(false);
-    setMinRating(null);
-    setMaxDeliveryTime(null);
-    setSearchQuery("");
-    setSelectedCategory("All Categories");
-    setSortOption("popular");
+    }
   };
 
   return (
-    <section className="bg-background py-s-lg px-s-md" id="marketplace-section">
+    <section className="bg-background py-8 px-s-md" id="marketplace-section">
+      {/* Anchor point to scroll to on filter/page change */}
+      <div id="marketplace-toolbar-anchor" className="relative -top-24"></div>
+
       <div className="max-w-s-container-max mx-auto space-y-6">
         
-        {/* Marketplace Toolbar */}
+        {/* ======================================================================= */}
+        {/* 1. STICKY MARKETPLACE TOOLBAR */}
+        {/* ======================================================================= */}
         <div 
+          className="sticky top-[80px] z-30 bg-white/95 backdrop-blur border border-outline-variant/30 rounded-xl p-4 shadow-sm space-y-4 transition-all duration-300"
           id="marketplace-toolbar"
-          className="bg-white border border-outline-variant/30 rounded-xl p-4 shadow-sm space-y-4 relative z-20"
         >
-          {/* Header & Tabs */}
+          {/* Header & Sourcing Tabs */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-            <div className="flex items-center bg-surface-container-low p-1 rounded-lg border border-outline-variant/30">
+            <div className="flex items-center bg-surface-container-low p-1 rounded-lg border border-outline-variant/30 w-full md:w-auto overflow-x-auto hide-scrollbar">
               <button
-                onClick={() => setSearchType("product")}
-                className={`px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all ${
+                onClick={() => { setSearchType("product"); setCurrentPage(1); }}
+                className={`flex-1 md:flex-none px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all text-center whitespace-nowrap cursor-pointer ${
                   searchType === "product" ? "bg-white text-trade-navy shadow-sm" : "text-secondary hover:text-trade-navy"
                 }`}
               >
                 Products
               </button>
               <button
-                onClick={() => setSearchType("supplier")}
-                className={`px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all ${
+                onClick={() => { setSearchType("supplier"); setCurrentPage(1); }}
+                className={`flex-1 md:flex-none px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all text-center whitespace-nowrap cursor-pointer ${
                   searchType === "supplier" ? "bg-white text-trade-navy shadow-sm" : "text-secondary hover:text-trade-navy"
                 }`}
               >
                 Suppliers
               </button>
               <button
-                onClick={() => setSearchType("company")}
-                className={`px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all ${
+                onClick={() => { setSearchType("manufacturer"); setCurrentPage(1); }}
+                className={`flex-1 md:flex-none px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all text-center whitespace-nowrap cursor-pointer ${
+                  searchType === "manufacturer" ? "bg-white text-trade-navy shadow-sm" : "text-secondary hover:text-trade-navy"
+                }`}
+              >
+                Manufacturers
+              </button>
+              <button
+                onClick={() => { setSearchType("company"); setCurrentPage(1); }}
+                className={`flex-1 md:flex-none px-4 py-1.5 rounded-md font-label-sm text-[12px] font-bold transition-all text-center whitespace-nowrap cursor-pointer ${
                   searchType === "company" ? "bg-white text-trade-navy shadow-sm" : "text-secondary hover:text-trade-navy"
                 }`}
               >
                 Companies
               </button>
             </div>
-            <div className="font-label-sm text-secondary text-[12px] font-medium">
-              <span className="text-trade-navy font-bold">{filteredProducts.length}</span> Products Found
+
+            <div className="font-label-sm text-secondary text-[12.5px] font-medium flex items-center gap-1.5 ml-1 md:ml-0">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+              <span>Sourcing Network:</span>
+              <strong className="text-trade-navy font-bold">{filteredProducts.length}</strong>
+              <span className="text-secondary/70">listings found</span>
             </div>
           </div>
 
-          {/* Search Inputs, Dropdowns, Sorting */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
-            {/* Search Input bar */}
-            <div className="lg:col-span-4 relative group">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary/60">
+          {/* Advanced Search Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
+            {/* Search input with type description */}
+            <div className="sm:col-span-2 lg:col-span-4 relative group">
+              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary/60 text-[18px]">
                 search
               </span>
               <input
                 type="text"
-                placeholder={`Search B2B ${searchType}s...`}
+                placeholder={`Search bulk ${searchType}s...`}
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                }}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px]"
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px] text-trade-navy"
               />
             </div>
 
             {/* Category Dropdown */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2.5">
               <select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                }}
-                className="w-full px-3 py-2.5 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px] text-on-surface cursor-pointer"
+                value={toolbarCategory}
+                onChange={(e) => { setToolbarCategory(e.target.value); setCurrentPage(1); }}
+                className="w-full px-3 py-2 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px] text-trade-navy font-semibold cursor-pointer"
               >
                 <option value="All Categories">All Categories</option>
                 {categoriesList.map(cat => (
@@ -338,445 +413,587 @@ export default function Marketplace() {
               </select>
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="lg:col-span-3">
+            {/* Industry Dropdown */}
+            <div className="lg:col-span-2.5">
               <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-                className="w-full px-3 py-2.5 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px] text-on-surface cursor-pointer"
+                value={toolbarIndustry}
+                onChange={(e) => { setToolbarIndustry(e.target.value); setCurrentPage(1); }}
+                className="w-full px-3 py-2 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px] text-trade-navy font-semibold cursor-pointer"
               >
-                <option value="popular">Sort: Popularity</option>
-                <option value="price_low">Price: Low to High</option>
-                <option value="price_high">Price: High to Low</option>
-                <option value="moq_low">MOQ: Low to High</option>
-                <option value="rating">Rating: High to Low</option>
+                <option value="All Industries">All Industries</option>
+                {industriesList.map(ind => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
               </select>
             </div>
 
-            {/* Filter Toggle Button (Mobile/Tablet Only) & Reset */}
-            <div className="lg:col-span-2 flex gap-2">
-              <button
-                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                className="flex-1 lg:hidden flex items-center justify-center gap-1.5 px-3 py-2.5 bg-surface-container border border-outline-variant/50 rounded-lg font-label-sm text-[12px] text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
+            {/* Location Dropdown */}
+            <div className="lg:col-span-2">
+              <select
+                value={toolbarLocation}
+                onChange={(e) => { setToolbarLocation(e.target.value); setCurrentPage(1); }}
+                className="w-full px-3 py-2 bg-surface-container-low border border-transparent focus:border-trade-orange focus:bg-white focus:ring-0 rounded-lg text-body-md font-body-md transition-all outline-none text-[13px] text-trade-navy font-semibold cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">filter_list</span>
-                Filters
-              </button>
+                <option value="All Locations">All Locations</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="West Bengal">West Bengal</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Pune">Pune</option>
+                <option value="Ahmedabad">Ahmedabad</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Chennai">Chennai</option>
+                <option value="New Delhi">New Delhi</option>
+                <option value="Noida">Noida</option>
+                <option value="Kolkata">Kolkata</option>
+              </select>
+            </div>
+
+            {/* Reset Button */}
+            <div className="lg:col-span-1 flex gap-2">
               <button
-                onClick={resetFilters}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 border border-outline-variant rounded-lg font-label-sm text-[12px] text-secondary hover:bg-surface-variant transition-colors cursor-pointer"
+                onClick={handleResetFilters}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 border border-outline-variant hover:bg-surface-variant hover:text-trade-navy rounded-lg font-label-sm text-[12px] text-secondary font-bold transition-all active:scale-95 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                <span className="material-symbols-outlined text-[15px]">restart_alt</span>
                 Reset
               </button>
             </div>
           </div>
         </div>
 
-        {/* Sidebar + Main Grid Split */}
-        <div className="flex flex-col lg:flex-row gap-6 relative items-start">
+        {/* ======================================================================= */}
+        {/* 2. MARKETPLACE CONTENT */}
+        {/* ======================================================================= */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           
-          {/* Left Sidebar Filters (Desktop viewport - Static) */}
-          <aside className="hidden lg:block w-72 bg-white border border-outline-variant/30 rounded-xl p-5 shadow-sm space-y-6 flex-shrink-0 sticky top-24 max-h-[85vh] overflow-y-auto hide-scrollbar">
-            {/* Filter sections header */}
+          {/* ========================================== */}
+          {/* LEFT SIDEBAR FILTERS (300px width) */}
+          {/* ========================================== */}
+          <aside className="w-full lg:w-[300px] flex-shrink-0 bg-white border border-outline-variant/30 rounded-xl p-5 shadow-xs space-y-4 sticky top-[170px] max-h-[calc(100vh-200px)] overflow-y-auto hide-scrollbar">
+            
             <div className="flex justify-between items-center pb-3 border-b border-outline-variant/30">
-              <h3 className="font-headline-md text-[16px] text-trade-navy font-bold">Filters</h3>
-              <button onClick={resetFilters} className="text-trade-orange text-[11px] font-bold hover:underline">
+              <div className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-trade-navy text-[18px]">filter_list</span>
+                <h3 className="font-headline-md text-[14.5px] text-trade-navy font-black tracking-wide uppercase">Sidebar Filters</h3>
+              </div>
+              <button onClick={handleResetFilters} className="text-trade-orange text-[11px] font-black tracking-wide uppercase hover:underline">
                 Clear All
               </button>
             </div>
 
-            {/* Categories */}
-            <div className="space-y-2">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Categories</h4>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                {categoriesList.map(cat => (
-                  <label key={cat} className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filterCategory.includes(cat)}
-                      onChange={() => toggleCategoryFilter(cat)}
-                      className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                    />
-                    {cat}
-                  </label>
-                ))}
-              </div>
-            </div>
+            {/* Filter Group: Categories */}
+            <FilterSection title="Categories">
+              {categoriesList.map(cat => (
+                <label key={cat} className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={filterCategory.includes(cat)}
+                    onChange={() => toggleFilterCategory(cat)}
+                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                  />
+                  <span className={filterCategory.includes(cat) ? "font-bold text-trade-navy" : ""}>{cat}</span>
+                </label>
+              ))}
+            </FilterSection>
 
-            {/* Industry */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Industry</h4>
-              <div className="space-y-1.5">
-                {industriesList.map(ind => (
-                  <label key={ind} className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filterIndustry.includes(ind)}
-                      onChange={() => toggleIndustryFilter(ind)}
-                      className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                    />
-                    {ind}
-                  </label>
-                ))}
-              </div>
-            </div>
+            {/* Filter Group: Industry */}
+            <FilterSection title="Industry Focus">
+              {industriesList.map(ind => (
+                <label key={ind} className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={filterIndustry.includes(ind)}
+                    onChange={() => toggleFilterIndustry(ind)}
+                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                  />
+                  <span className={filterIndustry.includes(ind) ? "font-bold text-trade-navy" : ""}>{ind}</span>
+                </label>
+              ))}
+            </FilterSection>
 
-            {/* Price Range Filter */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold text-left">Price Range (₹)</h4>
+            {/* Filter Group: Location */}
+            <FilterSection title="Location Profile">
+              <div>
+                <label className="text-[10px] text-secondary uppercase font-bold tracking-wider block mb-1">Country</label>
+                <select
+                  value={country}
+                  onChange={(e) => { setCountry(e.target.value); setCurrentPage(1); }}
+                  className="w-full p-2 border border-outline-variant/50 rounded-lg text-[12px] text-trade-navy font-semibold outline-none cursor-pointer bg-white"
+                >
+                  <option value="India">India</option>
+                  <option value="All">All Countries</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-secondary uppercase font-bold tracking-wider block mb-1">State</label>
+                <select
+                  value={state}
+                  onChange={(e) => {
+                    setState(e.target.value);
+                    setCity("All Cities");
+                    setCurrentPage(1);
+                  }}
+                  className="w-full p-2 border border-outline-variant/50 rounded-lg text-[12px] text-trade-navy font-semibold outline-none cursor-pointer bg-white"
+                >
+                  {statesList.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-secondary uppercase font-bold tracking-wider block mb-1">City</label>
+                <select
+                  value={city}
+                  onChange={(e) => { setCity(e.target.value); setCurrentPage(1); }}
+                  className="w-full p-2 border border-outline-variant/50 rounded-lg text-[12px] text-trade-navy font-semibold outline-none cursor-pointer bg-white"
+                  disabled={state === "All States"}
+                >
+                  {citiesList.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </FilterSection>
+
+            {/* Filter Group: Supplier Type */}
+            <FilterSection title="Supplier Structure">
+              {[
+                { name: "Manufacturer", label: "Manufacturer" },
+                { name: "Wholesaler", label: "Wholesaler" },
+                { name: "Exporter", label: "Exporter" },
+              ].map(type => (
+                <label key={type.name} className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={supplierTypes.includes(type.name)}
+                    onChange={() => toggleSupplierType(type.name)}
+                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                  />
+                  <span className={supplierTypes.includes(type.name) ? "font-bold text-trade-navy" : ""}>{type.label}</span>
+                </label>
+              ))}
+            </FilterSection>
+
+            {/* Filter Group: Minimum Order Quantity (MOQ) */}
+            <FilterSection title="Max MOQ Target">
+              <div className="relative">
+                <input
+                  type="number"
+                  placeholder="Ex: 500 units"
+                  value={moqInput}
+                  onChange={(e) => { setMoqInput(e.target.value); setCurrentPage(1); }}
+                  className="w-full px-3 py-1.5 border border-outline-variant/50 rounded-lg text-[12.5px] outline-none focus:border-trade-orange text-trade-navy font-semibold bg-white"
+                />
+                {moqInput && (
+                  <button onClick={() => setMoqInput("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary hover:text-trade-navy">
+                    <span className="material-symbols-outlined text-[14px]">close</span>
+                  </button>
+                )}
+              </div>
+              <p className="text-[10px] text-secondary leading-tight">
+                Shows products with min order requirements less than or equal to this count.
+              </p>
+            </FilterSection>
+
+            {/* Filter Group: Price Range */}
+            <FilterSection title="Price Range (₹)">
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   placeholder="Min"
                   value={priceMin}
-                  onChange={(e) => { setPriceMin(e.target.value); }}
-                  className="w-full px-2 py-1.5 border border-outline-variant/50 rounded text-[12px] outline-none focus:border-trade-orange"
+                  onChange={(e) => { setPriceMin(e.target.value); setCurrentPage(1); }}
+                  className="w-full px-2 py-1.5 border border-outline-variant/50 rounded-lg text-[12px] text-trade-navy font-semibold outline-none focus:border-trade-orange bg-white"
                 />
                 <span className="text-secondary">-</span>
                 <input
                   type="number"
                   placeholder="Max"
                   value={priceMax}
-                  onChange={(e) => { setPriceMax(e.target.value); }}
-                  className="w-full px-2 py-1.5 border border-outline-variant/50 rounded text-[12px] outline-none focus:border-trade-orange"
+                  onChange={(e) => { setPriceMax(e.target.value); setCurrentPage(1); }}
+                  className="w-full px-2 py-1.5 border border-outline-variant/50 rounded-lg text-[12px] text-trade-navy font-semibold outline-none focus:border-trade-orange bg-white"
                 />
               </div>
-            </div>
+            </FilterSection>
 
-            {/* MOQ Filter */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Max MOQ Requirement</h4>
-              <div className="space-y-2">
+            {/* Filter Group: Verification & Assurance Badges */}
+            <FilterSection title="Trust & Verifications">
+              <label className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
                 <input
-                  type="range"
-                  min="1"
-                  max="10000"
-                  value={moqValue}
-                  onChange={(e) => { setMoqValue(e.target.value); }}
-                  className="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-trade-orange"
+                  type="checkbox"
+                  checked={tradeAssurance}
+                  onChange={(e) => { setTradeAssurance(e.target.checked); setCurrentPage(1); }}
+                  className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-secondary font-medium">
-                  <span>1 Unit</span>
-                  <span className="text-trade-orange font-bold">Under {moqValue || "Any"} Units</span>
-                  <span>10,000 Units</span>
-                </div>
-              </div>
-            </div>
+                <span className="flex items-center gap-1 font-semibold text-emerald-600">
+                  <span className="material-symbols-outlined text-[15px] fill-emerald-600">shield</span>
+                  Trade Assurance
+                </span>
+              </label>
 
-            {/* Location (Country, State, City) */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Location</h4>
-              <div className="space-y-2">
-                <div>
-                  <label className="text-[11px] text-secondary uppercase font-semibold block mb-0.5">Country</label>
-                  <select
-                    value={country}
-                    onChange={(e) => { setCountry(e.target.value); }}
-                    className="w-full p-2 border border-outline-variant/50 rounded text-[12px] outline-none cursor-pointer"
-                  >
-                    <option value="India">India</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] text-secondary uppercase font-semibold block mb-0.5">State</label>
-                  <select
-                    value={state}
-                    onChange={(e) => {
-                      setState(e.target.value);
-                      setCity("All Cities");
-                    }}
-                    className="w-full p-2 border border-outline-variant/50 rounded text-[12px] outline-none cursor-pointer"
-                  >
-                    {statesList.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] text-secondary uppercase font-semibold block mb-0.5">City</label>
-                  <select
-                    value={city}
-                    onChange={(e) => { setCity(e.target.value); }}
-                    className="w-full p-2 border border-outline-variant/50 rounded text-[12px] outline-none cursor-pointer"
-                    disabled={state === "All States"}
-                  >
-                    {citiesList.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
+              <label className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                <input
+                  type="checkbox"
+                  checked={readyStock}
+                  onChange={(e) => { setReadyStock(e.target.checked); setCurrentPage(1); }}
+                  className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                />
+                <span className="flex items-center gap-1 font-semibold text-trade-navy">
+                  <span className="material-symbols-outlined text-[15px]">inventory_2</span>
+                  Ready Stock
+                </span>
+              </label>
 
-            {/* Supplier Type */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Supplier Type</h4>
-              <div className="space-y-1.5">
-                {["Manufacturer", "Exporter", "Wholesaler"].map(type => (
-                  <label key={type} className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={supplierTypes.includes(type)}
-                      onChange={() => toggleSupplierTypeFilter(type)}
-                      className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                    />
-                    {type}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Verified & Assurance Badges */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Verification</h4>
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer font-medium">
-                  <input
-                    type="checkbox"
-                    checked={tradeAssurance}
-                    onChange={(e) => { setTradeAssurance(e.target.checked); }}
-                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                  />
-                  🛡️ Trade Assurance
-                </label>
-                <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={gstVerified}
-                    onChange={(e) => { setGstVerified(e.target.checked); }}
-                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                  />
+              <label className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                <input
+                  type="checkbox"
+                  checked={gstVerified}
+                  onChange={(e) => { setGstVerified(e.target.checked); setCurrentPage(1); }}
+                  className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                />
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px] text-blue-500">task_alt</span>
                   GST Verified
-                </label>
-                <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={msme}
-                    onChange={(e) => { setMsme(e.target.checked); }}
-                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                  />
-                  MSME Registered
-                </label>
-                <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isoCertified}
-                    onChange={(e) => { setIsoCertified(e.target.checked); }}
-                    className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                  />
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                <input
+                  type="checkbox"
+                  checked={isoCertified}
+                  onChange={(e) => { setIsoCertified(e.target.checked); setCurrentPage(1); }}
+                  className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                />
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px] text-purple-600">verified</span>
                   ISO Certified
-                </label>
-                <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
+                </span>
+              </label>
+
+              <label className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
+                <input
+                  type="checkbox"
+                  checked={msmeVerified}
+                  onChange={(e) => { setMsmeVerified(e.target.checked); setCurrentPage(1); }}
+                  className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
+                />
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px] text-orange-600">business</span>
+                  MSME Verified
+                </span>
+              </label>
+            </FilterSection>
+
+            {/* Filter Group: Supplier Rating */}
+            <FilterSection title="Supplier Rating">
+              {[4.5, 4.0, 3.5].map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  onClick={() => {
+                    setMinRating(minRating === rating ? null : rating);
+                    setCurrentPage(1);
+                  }}
+                  className={`w-full flex items-center gap-1.5 text-[12.5px] px-2 py-1 rounded-lg transition-colors text-left ${
+                    minRating === rating
+                      ? "bg-trade-orange/10 text-trade-orange font-bold border border-trade-orange/20"
+                      : "text-secondary hover:bg-surface-container border border-transparent"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[15px] text-amber-500 fill-amber-500">star</span>
+                  <span>{rating} Stars & Up</span>
+                </button>
+              ))}
+            </FilterSection>
+
+            {/* Filter Group: Delivery Time */}
+            <FilterSection title="Lead/Delivery Time">
+              {[3, 5, 7, 10].map((days) => (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => {
+                    setMaxDeliveryTime(maxDeliveryTime === days ? null : days);
+                    setCurrentPage(1);
+                  }}
+                  className={`w-full flex items-center gap-2 text-[12.5px] px-2 py-1 rounded-lg transition-colors text-left ${
+                    maxDeliveryTime === days
+                      ? "bg-trade-navy/5 text-trade-navy font-bold border border-trade-navy/15"
+                      : "text-secondary hover:bg-surface-container border border-transparent"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[15px]">local_shipping</span>
+                  <span>Dispatch inside {days} days</span>
+                </button>
+              ))}
+            </FilterSection>
+
+            {/* Filter Group: Shipping / Logistic Support */}
+            <FilterSection title="Shipping Options">
+              {[
+                { name: "road", label: "Road Freight (Trucks)" },
+                { name: "railway", label: "Railway Freight" },
+                { name: "port", label: "Sea/Port Freight" },
+              ].map(method => (
+                <label key={method.name} className="flex items-center gap-2 text-[12.5px] text-secondary hover:text-trade-navy cursor-pointer py-0.5">
                   <input
                     type="checkbox"
-                    checked={readyStock}
-                    onChange={(e) => { setReadyStock(e.target.checked); }}
+                    checked={shippingMethod.includes(method.name)}
+                    onChange={() => toggleShippingMethod(method.name)}
                     className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
                   />
-                  Ready Stock Available
+                  <span className={shippingMethod.includes(method.name) ? "font-bold text-trade-navy" : ""}>{method.label}</span>
                 </label>
-              </div>
-            </div>
+              ))}
+            </FilterSection>
 
-            {/* Star Rating */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Supplier Rating</h4>
-              <div className="flex flex-col gap-1.5">
-                {[4.5, 4.0, 3.5].map(rating => (
-                  <button
-                    key={rating}
-                    onClick={() => {
-                      setMinRating(minRating === rating ? null : rating);
-                    }}
-                    className={`flex items-center gap-1.5 text-[13px] px-2 py-1 rounded transition-colors text-left ${
-                      minRating === rating ? "bg-trade-orange/15 text-trade-orange font-semibold" : "text-secondary hover:bg-surface-container"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px] text-amber-500 fill-amber-500">star</span>
-                    <span>{rating} & Up</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Delivery Time */}
-            <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-              <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Delivery Time</h4>
-              <div className="flex flex-col gap-1.5">
-                {[3, 5, 7].map(days => (
-                  <button
-                    key={days}
-                    onClick={() => {
-                      setMaxDeliveryTime(maxDeliveryTime === days ? null : days);
-                    }}
-                    className={`flex items-center gap-2 text-[13px] px-2 py-1 rounded transition-colors text-left ${
-                      maxDeliveryTime === days ? "bg-trade-orange/15 text-trade-orange font-semibold" : "text-secondary hover:bg-surface-container"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">local_shipping</span>
-                    <span>Within {days} Days</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </aside>
 
-          {/* Main Product Grid */}
-          <div className="flex-1 w-full space-y-6">
-            
-            {/* Grid of Cards */}
-            {visibleProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-5 w-full">
-                {visibleProducts.map((product) => (
-                  <motion.div
-                    key={product.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white border border-outline-variant/30 rounded-xl overflow-hidden hover:border-trade-orange/50 hover:shadow-lg transition-all duration-300 flex flex-col group relative"
+          {/* ========================================== */}
+          {/* RIGHT PRODUCT DISPLAY SECTION */}
+          {/* ========================================== */}
+          <div className="flex-1 w-full space-y-4">
+
+            {/* ==================================================== */}
+            {/* TOP RESULT TOOLBAR (Sorting & Grid/List Toggle) */}
+            {/* ==================================================== */}
+            <div className="bg-white border border-outline-variant/30 rounded-xl p-3 shadow-xs flex flex-col sm:flex-row justify-between items-center gap-3">
+              
+              <div className="flex items-center gap-2.5 text-[13px] text-secondary font-medium">
+                <span>Sorted by:</span>
+                <div className="flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-lg border border-outline-variant/30">
+                  <select
+                    value={sortOption}
+                    onChange={(e) => { setSortOption(e.target.value); setCurrentPage(1); }}
+                    className="bg-transparent border-none outline-none text-trade-navy font-bold text-[12.5px] cursor-pointer"
                   >
-                    {/* Trade Assurance Top Badge */}
-                    {product.tradeAssurance && (
-                      <div className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 flex items-center gap-0.5">
-                        <span className="material-symbols-outlined text-[10px]">shield</span>
-                        Assurance
-                      </div>
-                    )}
+                    <option value="popular">Popularity</option>
+                    <option value="latest">Latest Addition</option>
+                    <option value="moq_low">MOQ (Low to High)</option>
+                    <option value="price_low">Price (Low to High)</option>
+                    <option value="price_high">Price (High to Low)</option>
+                    <option value="rating">Supplier Rating</option>
+                  </select>
+                </div>
+              </div>
 
-                    {/* Ready Stock Badge */}
-                    {product.readyStock && (
-                      <div className="absolute top-2 right-2 bg-trade-navy text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-sm z-10">
-                        Ready Stock
-                      </div>
-                    )}
+              <div className="flex items-center gap-4">
+                {/* Result counts info */}
+                <div className="text-[12px] text-secondary/80 font-medium">
+                  Showing <strong className="text-trade-navy font-bold">{filteredProducts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}</strong> - <strong className="text-trade-navy font-bold">{Math.min(currentPage * pageSize, filteredProducts.length)}</strong> of <strong className="text-trade-navy font-bold">{filteredProducts.length}</strong> items
+                </div>
 
-                    {/* Image Area */}
-                    <Link 
-                      href={`/products/${product.id}`} 
-                      className="relative w-full aspect-square bg-surface-container-low overflow-hidden cursor-pointer block"
+                {/* Grid / List Toggles */}
+                <div className="flex items-center bg-surface-container-low p-1 rounded-lg border border-outline-variant/30">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-1.5 rounded-md flex items-center justify-center transition-all cursor-pointer ${
+                      viewMode === "grid" ? "bg-white text-trade-navy shadow-xs" : "text-secondary hover:text-trade-navy"
+                    }`}
+                    title="Grid View"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`p-1.5 rounded-md flex items-center justify-center transition-all cursor-pointer ${
+                      viewMode === "list" ? "bg-white text-trade-navy shadow-xs" : "text-secondary hover:text-trade-navy"
+                    }`}
+                    title="List View"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">view_list</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* ==================================================== */}
+            {/* PRODUCT LAYOUT CONTAINER */}
+            {/* ==================================================== */}
+            {paginatedProducts.length > 0 ? (
+              
+              // GRID MODE (Exactly 5 Cards per Row on wide viewports)
+              viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
+                  {paginatedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onViewDetails={(p) => setActiveModal({ type: "details", product: p })}
+                      onQuote={(p) => setActiveModal({ type: "quote", product: p })}
+                      onBuyNow={(p) => setActiveModal({ type: "buy", product: p })}
+                      onChat={(p) => setActiveModal({ type: "chat", product: p })}
+                    />
+                  ))}
+                </div>
+              ) : (
+                // LIST MODE (Row listing style like professional sourcing directories)
+                <div className="flex flex-col gap-4.5 w-full">
+                  {paginatedProducts.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      layoutId={`product-card-${product.id}`}
+                      className="bg-white border border-outline-variant/30 rounded-xl overflow-hidden hover:border-trade-orange/40 hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row group relative"
                     >
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        priority={product.id === "PROD-1001" || product.id === "PROD-1002"}
-                      />
-                    </Link>
-
-                    {/* Information Area */}
-                    <div className="p-3 flex-grow flex flex-col justify-between space-y-2">
-                      <div className="space-y-1">
-                        {/* Supplier Info */}
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] text-secondary font-semibold uppercase tracking-wider truncate max-w-[120px]">
-                            {product.supplierName}
-                          </span>
-                          <div className="flex items-center gap-0.5 bg-amber-50 px-1.5 py-0.5 rounded text-[10px] text-amber-700 font-bold">
-                            <span className="material-symbols-outlined text-[11px] text-amber-500 fill-amber-500">star</span>
-                            {product.supplierRating}
-                          </div>
-                        </div>
-
-                        {/* Product Title */}
-                        <h3 className="font-headline-md text-[13px] md:text-[14px] text-trade-navy font-bold leading-tight line-clamp-2 hover:text-trade-orange transition-colors">
-                          <Link href={`/products/${product.id}`} className="cursor-pointer">
-                            {product.name}
-                          </Link>
-                        </h3>
-
-                        {/* Short Description */}
-                        <p className="text-[11px] text-secondary leading-normal line-clamp-2">
-                          {product.description}
-                        </p>
-                      </div>
-
-                      {/* Technical/B2B specs */}
-                      <div className="space-y-1.5 pt-1.5 border-t border-outline-variant/10">
-                        {/* Price */}
-                        <div className="flex flex-wrap items-baseline gap-1">
-                          <span className="font-display-lg text-[14px] md:text-[16px] text-trade-orange font-extrabold">
-                            ₹{product.priceMin.toLocaleString("en-IN")} - ₹{product.priceMax.toLocaleString("en-IN")}
-                          </span>
-                          <span className="text-[10px] text-secondary font-medium">/{product.unit}</span>
-                        </div>
-
-                        {/* MOQ & Location */}
-                        <div className="flex justify-between items-center text-[10px] text-secondary">
-                          <span className="font-semibold bg-surface-container px-1.5 py-0.5 rounded text-[9px] text-on-surface">
-                            MOQ: {product.moq} {product.unit}s
-                          </span>
-                          <span className="flex items-center gap-0.5 font-medium">
-                            <span className="material-symbols-outlined text-[11px]">location_on</span>
-                            {product.city}
-                          </span>
-                        </div>
-
-                        {/* Verification badging */}
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {product.gstVerified && (
-                            <span className="text-[8px] bg-blue-50 text-blue-700 font-bold px-1 py-0.5 rounded border border-blue-100">
-                              GST
+                      {/* Left: Product Image */}
+                      <div 
+                        onClick={() => setActiveModal({ type: "details", product })}
+                        className="relative w-full md:w-[240px] aspect-video md:aspect-square bg-surface-container-low overflow-hidden cursor-pointer flex-shrink-0 border-b md:border-b-0 md:border-r border-outline-variant/10"
+                      >
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 240px"
+                          className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        />
+                        {/* Badges Overlay on Image */}
+                        <div className="absolute top-2.5 left-2.5 z-10 flex gap-1">
+                          {product.tradeAssurance && (
+                            <span className="bg-emerald-500 text-white text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs flex items-center gap-0.5 select-none">
+                              🛡️ Assurance
                             </span>
                           )}
-                          {product.msme && (
-                            <span className="text-[8px] bg-purple-50 text-purple-700 font-bold px-1 py-0.5 rounded border border-purple-100">
-                              MSME
+                          {product.readyStock && (
+                            <span className="bg-trade-navy text-white text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs flex items-center gap-0.5 select-none">
+                              📦 Stock
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Middle: Specifications and Information */}
+                      <div className="p-5 flex-grow flex flex-col justify-between space-y-4">
+                        <div className="space-y-2">
+                          {/* Supplier details line */}
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-[11px] text-trade-navy font-extrabold uppercase tracking-widest bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
+                              {product.supplierName}
+                            </span>
+                            <span className="text-[11px] text-secondary font-medium flex items-center gap-0.5">
+                              <span className="material-symbols-outlined text-[13px] text-amber-500 fill-amber-500">star</span>
+                              {product.supplierRating} rating
+                            </span>
+                            <span className="text-secondary/55 text-[11px]">•</span>
+                            <span className="text-[11px] text-secondary font-semibold flex items-center gap-0.5">
+                              <span className="material-symbols-outlined text-[13px]">location_on</span>
+                              {product.city}, {product.state}
+                            </span>
+                          </div>
+
+                          {/* Product Title */}
+                          <h3 
+                            onClick={() => setActiveModal({ type: "details", product })}
+                            className="font-headline-lg text-[16px] md:text-[18px] text-trade-navy font-black leading-tight hover:text-trade-orange transition-colors cursor-pointer"
+                          >
+                            {product.name}
+                          </h3>
+
+                          {/* Short description */}
+                          <p className="text-[12.5px] text-secondary leading-relaxed max-w-2xl">
+                            {product.description}
+                          </p>
+
+                          {/* Specifications parameters */}
+                          {product.specifications && (
+                            <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-1.5 text-[11.5px] text-secondary/90">
+                              {Object.entries(product.specifications).slice(0, 3).map(([key, val]) => (
+                                <div key={key} className="flex gap-1.5">
+                                  <span className="font-bold text-trade-navy">{key}:</span>
+                                  <span>{val}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer verification icons */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {product.gstVerified && (
+                            <span className="text-[9px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-100 uppercase tracking-wide">
+                              GST Verified
                             </span>
                           )}
                           {product.isoCertified && (
-                            <span className="text-[8px] bg-slate-50 text-slate-700 font-bold px-1 py-0.5 rounded border border-slate-100">
-                              ISO
+                            <span className="text-[9px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded border border-purple-100 uppercase tracking-wide">
+                              ISO 9001
+                            </span>
+                          )}
+                          {product.msme && (
+                            <span className="text-[9px] bg-orange-50 text-orange-700 font-bold px-2 py-0.5 rounded border border-orange-100 uppercase tracking-wide">
+                              MSME Registered
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Interactive B2B Buttons Grid */}
-                      <div className="grid grid-cols-2 gap-1.5 pt-2">
-                        <button
-                          onClick={() => setAuthModalOpen(true)}
-                          className="px-2 py-1.5 bg-trade-orange/10 hover:bg-trade-orange text-trade-orange hover:text-white rounded border border-trade-orange/20 text-[10.5px] font-bold transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[12px]">request_quote</span>
-                          RFQ
-                        </button>
-                        <button
-                          onClick={() => setAuthModalOpen(true)}
-                          className="px-2 py-1.5 bg-trade-navy/5 hover:bg-trade-navy hover:text-white text-trade-navy rounded border border-outline-variant/30 text-[10.5px] font-bold transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[12px]">chat</span>
-                          Chat
-                        </button>
-                        <button
-                          onClick={() => setAuthModalOpen(true)}
-                          className="col-span-2 px-2.5 py-1.5 bg-trade-navy hover:bg-trade-navy/90 text-white rounded text-[11px] font-bold transition-all active:scale-95 shadow-sm flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[13px]">shopping_cart</span>
-                          Buy Now
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      {/* Right: Sourcing Price Quote Panel */}
+                      <div className="p-5 w-full md:w-[200px] border-t md:border-t-0 md:border-l border-outline-variant/20 flex flex-col justify-between bg-surface-container-lowest flex-shrink-0">
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-[10px] text-secondary font-black uppercase tracking-widest mb-0.5">Bulk Price</p>
+                            <p className="font-display-lg text-[18px] text-trade-orange font-black">
+                              ₹{product.priceMin.toLocaleString("en-IN")} - ₹{product.priceMax.toLocaleString("en-IN")}
+                            </p>
+                            <p className="text-[10px] text-secondary mt-0.5">Per unit: / {product.unit}</p>
+                          </div>
 
-                {/* Sentinel for infinite scroll */}
-                {visibleCount < filteredProducts.length && (
-                  <div 
-                    ref={observerRef} 
-                    className="w-full flex justify-center py-8 col-span-full"
-                  >
-                    <div className="flex items-center gap-2 text-secondary">
-                      <div className="w-5 h-5 border-2 border-trade-orange border-t-transparent rounded-full animate-spin"></div>
-                      <span className="font-label-sm text-[12px]">Loading more products...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                          <div className="text-[11.5px] text-secondary">
+                            <span className="font-bold text-trade-navy">MOQ:</span> {product.moq} {product.unit}s
+                          </div>
+                        </div>
+
+                        {/* Sourcing Buttons */}
+                        <div className="space-y-1.5 pt-4">
+                          <button
+                            onClick={() => setActiveModal({ type: "quote", product })}
+                            className="w-full py-2 bg-trade-orange hover:bg-trade-orange/95 text-white rounded-lg font-black tracking-wide text-[11px] uppercase transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[13px]">request_quote</span>
+                            Request RFQ
+                          </button>
+                          
+                          <button
+                            onClick={() => setActiveModal({ type: "chat", product })}
+                            className="w-full py-2 bg-white hover:bg-surface-container text-trade-navy border border-outline-variant rounded-lg font-black tracking-wide text-[11px] uppercase transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[13px]">chat</span>
+                            Chat Sourcing
+                          </button>
+                          
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <button
+                              onClick={() => setActiveModal({ type: "details", product })}
+                              className="py-1.5 bg-white hover:bg-surface-container text-trade-navy rounded-lg border border-outline-variant text-[10px] font-black tracking-wide uppercase transition-all flex items-center justify-center cursor-pointer"
+                            >
+                              Details
+                            </button>
+                            <button
+                              onClick={() => setActiveModal({ type: "buy", product })}
+                              className="py-1.5 bg-trade-navy hover:bg-trade-navy/95 text-white rounded-lg text-[10px] font-black tracking-wide uppercase transition-all flex items-center justify-center cursor-pointer"
+                            >
+                              Buy
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                    </motion.div>
+                  ))}
+                </div>
+              )
+
             ) : (
+              // EMPTY STATE
               <div className="bg-white border border-outline-variant/30 rounded-xl p-12 text-center space-y-4">
                 <span className="material-symbols-outlined text-4xl text-secondary/40">search_off</span>
                 <h3 className="font-headline-md text-trade-navy font-bold text-[16px]">No Products Found</h3>
@@ -784,235 +1001,145 @@ export default function Marketplace() {
                   We couldn&apos;t find any products matching your specific query or filter checkboxes. Try resetting your parameters.
                 </p>
                 <button
-                  onClick={resetFilters}
-                  className="px-4 py-2 bg-trade-orange text-white rounded-lg font-label-sm font-bold shadow-md hover:brightness-105 active:scale-95 transition-all text-[12px]"
+                  onClick={handleResetFilters}
+                  className="px-4 py-2 bg-trade-orange text-white rounded-lg font-label-sm font-bold shadow-md hover:brightness-105 active:scale-95 transition-all text-[12px] cursor-pointer"
                 >
                   Clear Filters
                 </button>
               </div>
             )}
+
+            {/* ==================================================== */}
+            {/* 3. ENTERPRISE STYLE PAGINATION */}
+            {/* ==================================================== */}
+            {filteredProducts.length > 0 && (
+              <div className="bg-white border border-outline-variant/30 rounded-xl p-3.5 shadow-xs flex flex-col sm:flex-row justify-between items-center gap-4">
+                
+                {/* Page Size Selector */}
+                <div className="flex items-center gap-2 text-[12.5px] text-secondary font-medium">
+                  <span>Show</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(parseInt(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="bg-surface-container-low px-2 py-1 rounded-lg border border-outline-variant/30 font-bold text-trade-navy text-[12.5px] outline-none cursor-pointer"
+                  >
+                    <option value={5}>5 per page</option>
+                    <option value={10}>10 per page</option>
+                    <option value={15}>15 per page</option>
+                    <option value={20}>20 per page</option>
+                    <option value={30}>30 per page</option>
+                  </select>
+                  <span>records</span>
+                </div>
+
+                {/* Page Number Buttons */}
+                <div className="flex items-center gap-1.5">
+                  {/* First Page */}
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                    className="w-8 h-8 rounded-lg border border-outline-variant/30 flex items-center justify-center text-trade-navy hover:bg-surface-container disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+                    title="First Page"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">first_page</span>
+                  </button>
+
+                  {/* Previous Page */}
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="w-8 h-8 rounded-lg border border-outline-variant/30 flex items-center justify-center text-trade-navy hover:bg-surface-container disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+                    title="Previous Page"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+                  </button>
+
+                  {/* Middle pages representation */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                    .map((page, idx, arr) => {
+                      const prevPage = arr[idx - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && (
+                            <span className="px-1.5 text-secondary text-[12.5px] tracking-widest">...</span>
+                          )}
+                          <button
+                            onClick={() => handlePageChange(page)}
+                            className={`w-8 h-8 rounded-lg border text-[12.5px] font-bold flex items-center justify-center transition-all cursor-pointer ${
+                              currentPage === page
+                                ? "bg-trade-navy border-trade-navy text-white shadow-xs"
+                                : "bg-white border-outline-variant/30 text-trade-navy hover:bg-surface-container"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+
+                  {/* Next Page */}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="w-8 h-8 rounded-lg border border-outline-variant/30 flex items-center justify-center text-trade-navy hover:bg-surface-container disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+                    title="Next Page"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                  </button>
+
+                  {/* Last Page */}
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="w-8 h-8 rounded-lg border border-outline-variant/30 flex items-center justify-center text-trade-navy hover:bg-surface-container disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+                    title="Last Page"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">last_page</span>
+                  </button>
+                </div>
+
+                {/* Jump to page */}
+                <div className="hidden sm:flex items-center gap-1.5 text-[12.5px] text-secondary font-medium">
+                  <span>Page</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={currentPage}
+                    onChange={(e) => {
+                      const page = parseInt(e.target.value);
+                      if (!isNaN(page)) {
+                        handlePageChange(page);
+                      }
+                    }}
+                    className="w-10 text-center py-0.5 rounded-lg border border-outline-variant/40 text-trade-navy font-bold focus:border-trade-orange outline-none bg-surface-container-low"
+                  />
+                  <span>of <strong className="text-trade-navy font-bold">{totalPages}</strong></span>
+                </div>
+
+              </div>
+            )}
+
           </div>
+
         </div>
+
       </div>
 
-      {/* Slide-out Mobile Filter Drawer Overlay */}
-      <AnimatePresence>
-        {mobileFiltersOpen && (
-          <div className="fixed inset-0 z-50 flex lg:hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileFiltersOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-            ></motion.div>
-
-            <motion.aside
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-              className="relative flex flex-col w-72 h-full bg-white p-5 gap-6 shadow-2xl z-50 overflow-y-auto"
-            >
-              <div className="flex justify-between items-center pb-3 border-b border-outline-variant/30">
-                <h3 className="font-headline-md text-[16px] text-trade-navy font-bold">Filters</h3>
-                <button
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="p-1 rounded-lg text-secondary hover:bg-surface-container"
-                >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
-              </div>
-
-              {/* Categories */}
-              <div className="space-y-2">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Categories</h4>
-                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                  {categoriesList.map(cat => (
-                    <label key={cat} className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={filterCategory.includes(cat)}
-                        onChange={() => toggleCategoryFilter(cat)}
-                        className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                      />
-                      {cat}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Industry */}
-              <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Industry</h4>
-                <div className="space-y-1.5">
-                  {industriesList.map(ind => (
-                    <label key={ind} className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={filterIndustry.includes(ind)}
-                        onChange={() => toggleIndustryFilter(ind)}
-                        className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                      />
-                      {ind}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range Filter */}
-              <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold text-left">Price Range (₹)</h4>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceMin}
-                    onChange={(e) => { setPriceMin(e.target.value); }}
-                    className="w-full px-2 py-1.5 border border-outline-variant/50 rounded text-[12px] outline-none focus:border-trade-orange"
-                  />
-                  <span className="text-secondary">-</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceMax}
-                    onChange={(e) => { setPriceMax(e.target.value); }}
-                    className="w-full px-2 py-1.5 border border-outline-variant/50 rounded text-[12px] outline-none focus:border-trade-orange"
-                  />
-                </div>
-              </div>
-
-              {/* MOQ */}
-              <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Max MOQ Requirement</h4>
-                <input
-                  type="range"
-                  min="1"
-                  max="10000"
-                  value={moqValue}
-                  onChange={(e) => { setMoqValue(e.target.value); }}
-                  className="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-trade-orange"
-                />
-                <div className="flex justify-between text-[10px] text-secondary font-medium">
-                  <span>1 Unit</span>
-                  <span className="text-trade-orange font-bold">Under {moqValue || "Any"}</span>
-                  <span>10,000 Units</span>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Location</h4>
-                <div className="space-y-2">
-                  <div>
-                    <label className="text-[10px] text-secondary uppercase font-semibold block mb-0.5">Country</label>
-                    <select
-                      value={country}
-                      onChange={(e) => { setCountry(e.target.value); }}
-                      className="w-full p-2 border border-outline-variant/50 rounded text-[12px] outline-none cursor-pointer"
-                    >
-                      <option value="India">India</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] text-secondary uppercase font-semibold block mb-0.5">State</label>
-                    <select
-                      value={state}
-                      onChange={(e) => {
-                        setState(e.target.value);
-                        setCity("All Cities");
-                      }}
-                      className="w-full p-2 border border-outline-variant/50 rounded text-[12px] outline-none cursor-pointer"
-                    >
-                      {statesList.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] text-secondary uppercase font-semibold block mb-0.5">City</label>
-                    <select
-                      value={city}
-                      onChange={(e) => { setCity(e.target.value); }}
-                      className="w-full p-2 border border-outline-variant/50 rounded text-[12px] outline-none cursor-pointer"
-                      disabled={state === "All States"}
-                    >
-                      {citiesList.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Supplier Type */}
-              <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Supplier Type</h4>
-                <div className="space-y-1.5">
-                  {["Manufacturer", "Exporter", "Wholesaler"].map(type => (
-                    <label key={type} className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={supplierTypes.includes(type)}
-                        onChange={() => toggleSupplierTypeFilter(type)}
-                        className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                      />
-                      {type}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Verified Badges */}
-              <div className="space-y-2 pt-3 border-t border-outline-variant/20">
-                <h4 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Verification</h4>
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={tradeAssurance}
-                      onChange={(e) => { setTradeAssurance(e.target.checked); }}
-                      className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                    />
-                    🛡️ Trade Assurance
-                  </label>
-                  <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={gstVerified}
-                      onChange={(e) => { setGstVerified(e.target.checked); }}
-                      className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                    />
-                    GST Verified
-                  </label>
-                  <label className="flex items-center gap-2 text-[13px] text-secondary hover:text-trade-navy cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={readyStock}
-                      onChange={(e) => { setReadyStock(e.target.checked); }}
-                      className="w-4 h-4 rounded border-outline-variant text-trade-orange focus:ring-trade-orange cursor-pointer"
-                    />
-                    Ready Stock
-                  </label>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setMobileFiltersOpen(false)}
-                className="w-full mt-4 py-2.5 bg-trade-orange text-white rounded-lg font-label-sm text-[12px] font-bold shadow-md hover:brightness-105"
-              >
-                Apply Filters
-              </button>
-            </motion.aside>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Interactive Mock Action Modals */}
+      {/* ======================================================================= */}
+      {/* 4. MODALS & POPUPS INTERACTIVITY */}
+      {/* ======================================================================= */}
       <AnimatePresence>
         {activeModal.type !== null && modalProduct !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Modal Backdrop */}
+            
+            {/* Modal Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1021,21 +1148,22 @@ export default function Marketplace() {
               className="fixed inset-0 bg-black/60 backdrop-blur-xs"
             ></motion.div>
 
-            {/* Modal Body */}
+            {/* Modal Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               className="relative bg-white border border-outline-variant/40 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-2xl p-6 z-50 flex flex-col space-y-6"
             >
-              {/* Close Button */}
+              {/* Exit button */}
               <button
                 onClick={() => setActiveModal({ type: null, product: null })}
-                className="absolute top-4 right-4 p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors"
+                className="absolute top-4 right-4 p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[22px]">close</span>
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
 
+              {/* MODAL VIEW: View Details */}
               {activeModal.type === "details" && (
                 <div className="space-y-5">
                   <div className="flex gap-4">
@@ -1049,14 +1177,14 @@ export default function Marketplace() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex gap-1.5 flex-wrap">
-                        <span className="text-[10px] bg-surface-container px-2 py-0.5 rounded text-on-surface font-semibold">
+                        <span className="text-[10px] bg-surface-container px-2 py-0.5 rounded text-on-surface font-semibold uppercase">
                           ID: {modalProduct.id}
                         </span>
                         <span className="text-[10px] bg-trade-orange/15 text-trade-orange font-bold px-2 py-0.5 rounded">
                           {modalProduct.category}
                         </span>
                       </div>
-                      <h2 className="font-headline-lg text-[18px] md:text-[20px] text-trade-navy font-bold leading-tight">
+                      <h2 className="font-headline-lg text-[17px] md:text-[19px] text-trade-navy font-black leading-tight">
                         {modalProduct.name}
                       </h2>
                       <p className="text-[12px] text-secondary font-medium">
@@ -1065,44 +1193,58 @@ export default function Marketplace() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 text-[13px] text-secondary">
+                  <div className="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 text-[12.5px] text-secondary">
                     <div>
                       <p className="text-[10px] uppercase font-bold text-secondary/60 tracking-wider">Price Range</p>
-                      <p className="font-bold text-[16px] text-trade-orange">
+                      <p className="font-black text-[16px] text-trade-orange">
                         ₹{modalProduct.priceMin.toLocaleString("en-IN")} - ₹{modalProduct.priceMax.toLocaleString("en-IN")}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase font-bold text-secondary/60 tracking-wider">Min. Order Qty</p>
-                      <p className="font-bold text-[15px] text-trade-navy">
+                      <p className="text-[10px] uppercase font-bold text-secondary/60 tracking-wider">Min. Order Qty (MOQ)</p>
+                      <p className="font-bold text-[14.5px] text-trade-navy">
                         {modalProduct.moq} {modalProduct.unit}s
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-secondary/60 tracking-wider">Hub Location</p>
-                      <p className="font-semibold text-trade-navy flex items-center gap-0.5">
+                      <p className="font-bold text-trade-navy flex items-center gap-0.5">
                         <span className="material-symbols-outlined text-[13px]">location_on</span>
                         {modalProduct.location}
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-bold text-secondary/60 tracking-wider">Est. Lead Time</p>
-                      <p className="font-semibold text-trade-navy flex items-center gap-1">
+                      <p className="font-bold text-trade-navy flex items-center gap-1">
                         <span className="material-symbols-outlined text-[13px]">schedule</span>
                         {modalProduct.deliveryTime} Days
                       </p>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <h3 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Product Specifications</h3>
                     <p className="text-[13px] text-secondary leading-relaxed">
                       {modalProduct.description}
                     </p>
                   </div>
 
+                  {modalProduct.specifications && (
+                    <div className="space-y-2">
+                      <h4 className="font-label-sm text-[11px] text-trade-navy uppercase tracking-wider font-bold">Technical Specifications Matrix</h4>
+                      <div className="border border-outline-variant/30 rounded-xl overflow-hidden text-[12px]">
+                        {Object.entries(modalProduct.specifications).map(([key, val], idx) => (
+                          <div key={key} className={`flex p-2.5 ${idx % 2 === 0 ? "bg-surface-container-low" : "bg-white"}`}>
+                            <span className="w-1/3 text-secondary font-bold">{key}</span>
+                            <span className="w-2/3 text-trade-navy font-medium">{val}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
-                    <h3 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Certifications & Verifications</h3>
+                    <h3 className="font-label-sm text-[12px] text-trade-navy uppercase tracking-wider font-bold">Certifications & Verification Standard</h3>
                     <div className="flex flex-wrap gap-2">
                       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] ${modalProduct.gstVerified ? "bg-emerald-50 text-emerald-800 border-emerald-200 font-bold" : "bg-gray-50 border-gray-100 text-secondary"}`}>
                         <span className="material-symbols-outlined text-[14px]">check_circle</span>
@@ -1112,11 +1254,11 @@ export default function Marketplace() {
                         <span className="material-symbols-outlined text-[14px]">shield</span>
                         Trade Assurance
                       </div>
-                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] ${modalProduct.msme ? "bg-purple-50 text-purple-800 border-purple-200 font-bold" : "bg-gray-50 border-gray-100 text-secondary"}`}>
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] ${modalProduct.msme ? "bg-orange-50 text-orange-800 border-orange-200 font-bold" : "bg-gray-50 border-gray-100 text-secondary"}`}>
                         <span className="material-symbols-outlined text-[14px]">business</span>
                         MSME Registered
                       </div>
-                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] ${modalProduct.isoCertified ? "bg-blue-50 text-blue-800 border-blue-200 font-bold" : "bg-gray-50 border-gray-100 text-secondary"}`}>
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] ${modalProduct.isoCertified ? "bg-purple-50 text-purple-800 border-purple-200 font-bold" : "bg-gray-50 border-gray-100 text-secondary"}`}>
                         <span className="material-symbols-outlined text-[14px]">verified</span>
                         ISO 9001 Certified
                       </div>
@@ -1126,13 +1268,13 @@ export default function Marketplace() {
                   <div className="flex gap-3 pt-3 border-t border-outline-variant/20">
                     <button
                       onClick={() => setActiveModal({ type: "buy", product: modalProduct })}
-                      className="flex-1 py-3 bg-trade-navy hover:bg-trade-navy/95 text-white rounded-lg font-bold text-[12px] transition-all"
+                      className="flex-1 py-2.5 bg-trade-navy hover:bg-trade-navy/95 text-white rounded-lg font-bold text-[12px] transition-all cursor-pointer"
                     >
                       Buy Now
                     </button>
                     <button
                       onClick={() => setActiveModal({ type: "quote", product: modalProduct })}
-                      className="flex-1 py-3 bg-trade-orange hover:bg-trade-orange/95 text-white rounded-lg font-bold text-[12px] transition-all"
+                      className="flex-1 py-2.5 bg-trade-orange hover:bg-trade-orange/95 text-white rounded-lg font-bold text-[12px] transition-all cursor-pointer"
                     >
                       Send RFQ
                     </button>
@@ -1140,24 +1282,25 @@ export default function Marketplace() {
                 </div>
               )}
 
+              {/* MODAL VIEW: Request Quote (RFQ) */}
               {activeModal.type === "quote" && (
                 <div className="space-y-4">
                   <div>
-                    <span className="text-[10px] bg-trade-orange/15 text-trade-orange font-bold px-2 py-0.5 rounded">
-                      RFQ Engine
+                    <span className="text-[10px] bg-trade-orange/15 text-trade-orange font-bold px-2 py-0.5 rounded uppercase">
+                      B2B Sourcing RFQ
                     </span>
                     <h2 className="font-headline-lg text-[18px] text-trade-navy font-bold mt-1">
-                      Request Quotation for {modalProduct.name}
+                      Quotation Proposal for {modalProduct.name}
                     </h2>
                     <p className="text-[12px] text-secondary mt-1">
-                      Send a secure bulk RFQ to <span className="text-trade-navy font-bold">{modalProduct.supplierName}</span>.
+                      Direct request details to supplier: <strong className="text-trade-navy">{modalProduct.supplierName}</strong>.
                     </p>
                   </div>
 
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      alert(`Successfully sent RFQ for ${quoteQty} units to ${modalProduct.supplierName}!`);
+                      alert(`RFQ proposal for ${quoteQty} ${modalProduct.unit}s submitted successfully to ${modalProduct.supplierName}. Target price set to ₹${quotePrice || modalProduct.priceMin} / unit.`);
                       setActiveModal({ type: null, product: null });
                       setQuoteQty("");
                       setQuotePrice("");
@@ -1166,7 +1309,7 @@ export default function Marketplace() {
                   >
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="font-bold text-trade-navy">Required Quantity</label>
+                        <label className="font-bold text-trade-navy block">Target Quantity</label>
                         <div className="relative">
                           <input
                             type="number"
@@ -1175,38 +1318,39 @@ export default function Marketplace() {
                             placeholder={`Min: ${modalProduct.moq}`}
                             value={quoteQty}
                             onChange={(e) => setQuoteQty(e.target.value)}
-                            className="w-full px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy font-bold"
+                            className="w-full px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy font-bold bg-white"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary/60 uppercase font-semibold text-[10px]">
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary/60 uppercase font-semibold text-[10px] pointer-events-none">
                             {modalProduct.unit}s
                           </span>
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-bold text-trade-navy">Target Price / Unit (₹)</label>
+                        <label className="font-bold text-trade-navy block">Target Price (₹/unit)</label>
                         <input
                           type="number"
-                          placeholder={`Range: ₹${modalProduct.priceMin}-₹${modalProduct.priceMax}`}
+                          placeholder={`Range: ₹${modalProduct.priceMin}-${modalProduct.priceMax}`}
                           value={quotePrice}
                           onChange={(e) => setQuotePrice(e.target.value)}
-                          className="w-full px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy font-bold"
+                          className="w-full px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy font-bold bg-white"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="font-bold text-trade-navy">Requirement Details / Special Instructions</label>
+                      <label className="font-bold text-trade-navy block">Quotation Details / Requirements</label>
                       <textarea
                         rows={3}
-                        placeholder="Detail sizing, customization specifications, packaging needs, or delivery timelines requested."
-                        className="w-full p-3 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy"
+                        required
+                        placeholder="Please elaborate on your bulk requirements, logistics packaging requests, or customization specifications..."
+                        className="w-full p-3 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy bg-white"
                       ></textarea>
                     </div>
 
-                    <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant/20 flex gap-2">
+                    <div className="bg-emerald-50/50 p-3 rounded-lg border border-emerald-100 flex gap-2">
                       <span className="material-symbols-outlined text-emerald-600 text-[18px] flex-shrink-0">verified_user</span>
                       <p className="text-[11.5px] leading-relaxed text-secondary">
-                        <span className="text-trade-navy font-bold">TradeVistar Guarantee:</span> Your communication, quotes, and target discussions with the manufacturer are covered under secure escrow protection policies.
+                        <strong className="text-trade-navy font-bold">Sourcing Safety Guaranteed:</strong> Your communication and RFQ negotiations with the supplier are covered under TradeVistar secure escrow and arbitration agreements.
                       </p>
                     </div>
 
@@ -1214,13 +1358,13 @@ export default function Marketplace() {
                       <button
                         type="button"
                         onClick={() => setActiveModal({ type: "details", product: modalProduct })}
-                        className="flex-1 py-2.5 border border-outline-variant hover:bg-surface-variant text-secondary rounded-lg font-bold text-[12px] transition-all"
+                        className="flex-1 py-2.5 border border-outline-variant hover:bg-surface-variant text-secondary rounded-lg font-bold text-[12px] transition-all cursor-pointer"
                       >
                         Back
                       </button>
                       <button
                         type="submit"
-                        className="flex-grow-[2] py-2.5 bg-trade-orange hover:bg-trade-orange/95 text-white rounded-lg font-bold text-[12px] transition-all shadow-md"
+                        className="flex-grow-[2] py-2.5 bg-trade-orange hover:bg-trade-orange/95 text-white rounded-lg font-bold text-[12px] transition-all shadow-md cursor-pointer"
                       >
                         Submit RFQ Proposal
                       </button>
@@ -1229,6 +1373,7 @@ export default function Marketplace() {
                 </div>
               )}
 
+              {/* MODAL VIEW: Buy Now */}
               {activeModal.type === "buy" && (
                 <div className="space-y-4">
                   <div>
@@ -1236,68 +1381,67 @@ export default function Marketplace() {
                       Escrow Checkout
                     </span>
                     <h2 className="font-headline-lg text-[18px] text-trade-navy font-bold mt-1">
-                      Direct Purchase Contract
+                      Secure Escrow Purchase Order
                     </h2>
                     <p className="text-[12px] text-secondary mt-1">
-                      Complete direct payment utilizing protected trade escrow.
+                      Initiate direct payment contract protected by escrow.
                     </p>
                   </div>
 
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      alert(`Purchase order of ${buyQty} units successfully registered under escrow!`);
+                      setAuthModalOpen(true);
                       setActiveModal({ type: null, product: null });
-                      setBuyQty("");
                     }}
                     className="space-y-4 text-[13px] text-secondary"
                   >
-                    <div className="flex gap-3 items-center p-3 border border-outline-variant/20 rounded-xl">
+                    <div className="flex gap-3 items-center p-3 border border-outline-variant/20 rounded-xl bg-surface-container-low">
                       <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
                         <Image src={modalProduct.image} alt={modalProduct.name} fill className="object-cover" />
                       </div>
                       <div>
                         <h4 className="font-bold text-trade-navy">{modalProduct.name}</h4>
-                        <p className="text-[11px]">Price: ₹{modalProduct.priceMin.toLocaleString("en-IN")} / {modalProduct.unit}</p>
+                        <p className="text-[11px]">Sourcing Unit Cost: ₹{modalProduct.priceMin.toLocaleString("en-IN")} / {modalProduct.unit}</p>
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="font-bold text-trade-navy">Purchase Volume</label>
+                      <label className="font-bold text-trade-navy block">Order Volume</label>
                       <div className="relative">
                         <input
                           type="number"
                           required
                           min={modalProduct.moq}
                           value={buyQty}
-                          placeholder={`MOQ: ${modalProduct.moq}`}
+                          placeholder={`Minimum target: ${modalProduct.moq}`}
                           onChange={(e) => setBuyQty(e.target.value)}
-                          className="w-full px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy font-bold"
+                          className="w-full px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy font-bold bg-white"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary/60 uppercase font-semibold text-[10px]">
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary/60 uppercase font-semibold text-[10px] pointer-events-none">
                           {modalProduct.unit}s
                         </span>
                       </div>
                     </div>
 
                     {buyQty && parseInt(buyQty) >= modalProduct.moq && (
-                      <div className="p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl space-y-2 text-[12px]">
+                      <div className="p-3.5 bg-surface-container-low border border-outline-variant/30 rounded-xl space-y-2 text-[12.5px]">
                         <div className="flex justify-between">
-                          <span>Subtotal ({buyQty} units)</span>
+                          <span>Sourcing Subtotal ({buyQty} units)</span>
                           <span className="font-bold text-trade-navy">₹{(parseInt(buyQty) * modalProduct.priceMin).toLocaleString("en-IN")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>GST (18% Integrated)</span>
+                          <span>Integrated GST (18%)</span>
                           <span className="font-bold text-trade-navy">₹{(parseInt(buyQty) * modalProduct.priceMin * 0.18).toLocaleString("en-IN")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Est. Logistics & Freight</span>
-                          <span className="text-emerald-600 font-bold">Calculated on Dispatch</span>
+                          <span>freight Logistics fee</span>
+                          <span className="text-emerald-600 font-bold">Estimated on Shipping</span>
                         </div>
                         <div className="h-px bg-outline-variant/30 my-1"></div>
-                        <div className="flex justify-between text-[13px]">
-                          <span className="font-bold text-trade-navy">Total Pay (Escrow Locked)</span>
-                          <span className="font-extrabold text-trade-orange">₹{(parseInt(buyQty) * modalProduct.priceMin * 1.18).toLocaleString("en-IN")}</span>
+                        <div className="flex justify-between text-[13.5px]">
+                          <span className="font-black text-trade-navy">Total Sourcing Cost (Escrow Locked)</span>
+                          <span className="font-black text-trade-orange">₹{(parseInt(buyQty) * modalProduct.priceMin * 1.18).toLocaleString("en-IN")}</span>
                         </div>
                       </div>
                     )}
@@ -1306,57 +1450,59 @@ export default function Marketplace() {
                       <button
                         type="button"
                         onClick={() => setActiveModal({ type: "details", product: modalProduct })}
-                        className="flex-1 py-2.5 border border-outline-variant hover:bg-surface-variant text-secondary rounded-lg font-bold text-[12px]"
+                        className="flex-1 py-2.5 border border-outline-variant hover:bg-surface-variant text-secondary rounded-lg font-bold text-[12px] cursor-pointer"
                       >
                         Back
                       </button>
                       <button
                         type="submit"
-                        className="flex-grow-[2] py-2.5 bg-trade-navy hover:bg-trade-navy/90 text-white rounded-lg font-bold text-[12px] transition-all shadow-md"
+                        className="flex-grow-[2] py-2.5 bg-trade-navy hover:bg-trade-navy/90 text-white rounded-lg font-bold text-[12px] transition-all shadow-md cursor-pointer"
                       >
-                        Lock Escrow & Pay
+                        Lock Escrow Contract
                       </button>
                     </div>
                   </form>
                 </div>
               )}
 
+              {/* MODAL VIEW: Chat Supplier */}
               {activeModal.type === "chat" && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-outline-variant/20">
-                    <div className="w-8 h-8 rounded-full bg-trade-navy/10 flex items-center justify-center font-bold text-trade-navy text-[12px] flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-trade-navy/10 flex items-center justify-center font-bold text-trade-navy text-[14px] flex-shrink-0">
                       💬
                     </div>
                     <div>
-                      <h4 className="font-bold text-trade-navy">{modalProduct.supplierName}</h4>
+                      <h4 className="font-bold text-trade-navy text-[14px]">{modalProduct.supplierName}</h4>
                       <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
-                        Representative Online (Lead time response &lt;5 mins)
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Representative Online (Response time &lt;5 mins)
                       </p>
                     </div>
                   </div>
 
-                  <div className="h-48 bg-surface-container-low rounded-xl border border-outline-variant/20 p-3 overflow-y-auto space-y-3 flex flex-col justify-end text-[12px]">
-                    <div className="self-start bg-white border border-outline-variant/30 p-2.5 rounded-lg max-w-[80%] text-secondary">
-                      Hello! Thanks for showing interest in <span className="font-bold text-trade-navy">{modalProduct.name}</span>. How can I help you today? We offer customized branding and freight logistics quotes.
+                  <div className="h-44 bg-surface-container-low rounded-xl border border-outline-variant/20 p-3.5 overflow-y-auto space-y-3 flex flex-col justify-end text-[12px]">
+                    <div className="self-start bg-white border border-outline-variant/30 p-2.5 rounded-lg max-w-[85%] text-secondary leading-relaxed">
+                      Hello! Sourcing representative for <strong className="text-trade-navy font-bold">{modalProduct.name}</strong> is ready. Please let us know your requirements or quantity requests.
                     </div>
                   </div>
 
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      alert(`Message: "${chatMessage}" sent to ${modalProduct.supplierName}!`);
+                      alert(`Message details: "${chatMessage}" delivered to ${modalProduct.supplierName}. You will receive a chat notification response in the buyer dashboard shortly.`);
                       setChatMessage("");
+                      setActiveModal({ type: null, product: null });
                     }}
                     className="flex gap-2"
                   >
                     <input
                       type="text"
                       required
-                      placeholder="Type your bulk inquiry details..."
+                      placeholder="Type details of your sourcing query here..."
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      className="flex-grow px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy text-[13px]"
+                      className="flex-grow px-3 py-2 border border-outline-variant/60 rounded-lg outline-none focus:border-trade-orange text-trade-navy text-[13px] bg-white"
                     />
                     <button
                       type="submit"
@@ -1368,12 +1514,13 @@ export default function Marketplace() {
                   </form>
                 </div>
               )}
+
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* Continue to Purchase Login Prompt Modal */}
+      {/* CONTINUOUS AUTH SIGNIN CHECK PROMPT */}
       <AnimatePresence>
         {authModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1389,29 +1536,29 @@ export default function Marketplace() {
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="bg-white rounded-xl border border-outline-variant/30 w-full max-w-sm overflow-hidden shadow-2xl relative z-10 p-6 text-center space-y-5"
+              className="bg-white rounded-2xl border border-outline-variant/30 w-full max-w-sm overflow-hidden shadow-2xl relative z-50 p-6 text-center space-y-5"
             >
               <div className="space-y-2">
                 <div className="w-12 h-12 bg-trade-orange/10 rounded-full flex items-center justify-center text-trade-orange mx-auto">
                   <span className="material-symbols-outlined text-[24px]">lock</span>
                 </div>
-                <h3 className="font-headline-md text-[18px] text-trade-navy font-bold">Continue to Purchase</h3>
-                <p className="text-secondary text-[13px] leading-relaxed">
-                  Please login to continue your business transaction.
+                <h3 className="font-headline-md text-[17px] text-trade-navy font-black tracking-wide uppercase">Authenticate Transaction</h3>
+                <p className="text-secondary text-[12.5px] leading-relaxed">
+                  Please sign in to register secure escrow orders and RFQ communications.
                 </p>
               </div>
 
               <div className="space-y-2 pt-2">
                 <Link
                   href="/login"
-                  className="w-full py-2.5 bg-trade-navy hover:bg-trade-navy/95 text-white rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center justify-center cursor-pointer"
+                  className="w-full py-2.5 bg-trade-navy hover:bg-trade-navy/95 text-white rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center justify-center cursor-pointer uppercase tracking-wider font-black"
                 >
-                  Login
+                  Login Portal
                 </Link>
 
                 <Link
                   href="/register?role=buyer"
-                  className="w-full py-2.5 bg-white hover:bg-surface-container text-trade-navy border border-outline-variant rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center justify-center cursor-pointer"
+                  className="w-full py-2.5 bg-white hover:bg-surface-container text-trade-navy border border-outline-variant rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center justify-center cursor-pointer uppercase tracking-wider font-black"
                 >
                   Create Buyer Account
                 </Link>
@@ -1419,7 +1566,7 @@ export default function Marketplace() {
                 <button
                   type="button"
                   onClick={() => {
-                    alert("Google OAuth is simulated. Redirecting to Google Login...");
+                    alert("Simulated OAuth: Redirecting to Google Login...");
                     setAuthModalOpen(false);
                   }}
                   className="w-full py-2.5 bg-white hover:bg-surface-container text-secondary border border-outline-variant rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
@@ -1437,7 +1584,7 @@ export default function Marketplace() {
               <button
                 type="button"
                 onClick={() => setAuthModalOpen(false)}
-                className="w-full py-2 bg-transparent text-secondary hover:text-trade-navy rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                className="w-full py-2 bg-transparent text-secondary hover:text-trade-navy rounded-lg text-xs font-bold transition-colors cursor-pointer uppercase tracking-wider"
               >
                 Close
               </button>
@@ -1445,6 +1592,7 @@ export default function Marketplace() {
           </div>
         )}
       </AnimatePresence>
+
     </section>
   );
 }

@@ -1,22 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 export default function Hero() {
   return (
     <header className="pt-32 pb-s-xl px-s-md bg-surface relative overflow-hidden">
       <div className="max-w-s-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-s-lg items-center relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-s-md text-center lg:text-left flex flex-col items-center lg:items-start"
+        <div
+          className="space-y-s-md text-center lg:text-left flex flex-col items-center lg:items-start animate-fade-in"
         >
-          <div className="inline-flex items-center gap-s-xs px-3 py-1 bg-secondary-container/50 text-on-secondary-container rounded-full border border-secondary-container mx-auto lg:mx-0">
+          {/* <div className="inline-flex items-center gap-s-xs px-3 py-1 bg-secondary-container/50 text-on-secondary-container rounded-full border border-secondary-container mx-auto lg:mx-0">
             <span className="material-symbols-outlined text-[14px]">verified</span>
             <span className="font-label-caps text-[10px] tracking-widest uppercase">Verified Trade Network</span>
-          </div>
+          </div> */}
           <h1 className="font-display-lg text-display-lg lg:text-display-lg text-trade-navy leading-tight w-full">
             <span className="text-trade-orange">India&apos;s</span> Trusted B2B Marketplace <br className="hidden lg:inline" />
             <span className="text-trade-orange">for Bulk Buying, Faster Delivery</span>
@@ -33,13 +29,10 @@ export default function Hero() {
               Speak to Sales
             </button>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative group w-full"
+        <div
+          className="relative group w-full animate-fade-in"
         >
           <div className="absolute -inset-4 bg-trade-orange/5 rounded-3xl blur-3xl opacity-50 transition-opacity group-hover:opacity-70"></div>
           <div className="relative rounded-2xl overflow-hidden ghost-outline ambient-plume transition-all duration-700 opacity-100 translate-y-0 w-full aspect-video">
@@ -52,7 +45,7 @@ export default function Hero() {
               priority
             />
           </div>
-        </motion.div>
+        </div>
       </div>
       {/* Abstract Background Decoration */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-surface-container/30 to-transparent pointer-events-none"></div>

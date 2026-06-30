@@ -56,6 +56,7 @@
 }
 
 @theme {
+  --font-sans: var(--font-inter), Roboto, sans-serif;
   --color-secondary: #515f75;
   --color-surface-container: #f0edef;
   --color-surface: #fcf8fa;
@@ -149,12 +150,12 @@
   --text-headline-lg: var(--font-headline-lg);
   --text-headline-lg--line-height: var(--font-headline-lg-line-height);
   --text-headline-lg--letter-spacing: -0.03em;
-  --text-headline-lg--font-weight: 600;
+  --text-headline-lg--font-weight: 700;
 
   --text-headline-lg-mobile: 24px;
   --text-headline-lg-mobile--line-height: 32px;
   --text-headline-lg-mobile--letter-spacing: -0.02em;
-  --text-headline-lg-mobile--font-weight: 600;
+  --text-headline-lg-mobile--font-weight: 700;
 
   --text-headline-md: var(--font-headline-md);
   --text-headline-md--line-height: var(--font-headline-md-line-height);
@@ -212,6 +213,21 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-inter), Roboto, sans-serif;
+  font-weight: 400;
+}
+
+/* Global Heading & Typography Weight Alignments */
+h1, h2, h3, .font-headline-lg {
+  font-weight: 700;
+}
+
+.font-headline-md {
+  font-weight: 600;
+}
+
+nav, button, a, .product-title, .font-label-caps, .font-label-sm {
+  font-weight: 500;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
