@@ -43,7 +43,7 @@ export default function NewArrivals({ onViewDetails }: NewArrivalsProps) {
           {/* Left Chevron Button */}
           <button
             onClick={scrollLeft}
-            className="absolute left-0 md:left-2 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+            className="absolute left-0 md:left-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
             aria-label="Scroll left"
           >
             <span className="material-symbols-outlined text-[20px] font-black">chevron_left</span>
@@ -80,7 +80,7 @@ export default function NewArrivals({ onViewDetails }: NewArrivalsProps) {
           {/* Right Chevron Button */}
           <button
             onClick={scrollRight}
-            className="absolute right-0 md:right-2 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+            className="absolute right-0 md:right-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
             aria-label="Scroll right"
           >
             <span className="material-symbols-outlined text-[20px] font-black">chevron_right</span>

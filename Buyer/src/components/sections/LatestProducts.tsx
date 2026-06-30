@@ -85,7 +85,7 @@ export default function LatestProducts({
               <div className="w-full flex justify-center pt-2">
                 <button
                   onClick={() => onViewDetails(dealOfTheDay)}
-                  className="px-6 py-2 bg-[#0A47BC] hover:bg-trade-orange text-white rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 active:scale-95 cursor-pointer shadow-xs"
+                  className="px-6 py-2 bg-primary-blue hover:bg-secondary-blue text-white rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 active:scale-95 cursor-pointer shadow-xs"
                 >
                   Grab This Deal
                 </button>
@@ -105,36 +105,20 @@ export default function LatestProducts({
                 onClick={() => {
                   document.getElementById("search-filter-section")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="text-trade-navy hover:text-trade-orange text-xs font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                className="text-trade-navy hover:text-primary-blue text-xs font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
               >
                 View All
                 <span className="material-symbols-outlined text-[14px]">chevron_right</span>
               </button>
             </div>
 
-            {/* Desktop Grid (visible on md and larger) */}
-            <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
-              {latestItems.map((product) => (
-                <ProductCard
-                  key={`latest-dsktp-${product.id}`}
-                  product={product}
-                  onViewDetails={onViewDetails}
-                  onQuote={onQuote}
-                  onBuyNow={onBuyNow}
-                  onChat={onChat}
-                  isCompact={true}
-                  hideStars={true}
-                />
-              ))}
-            </div>
-
-            {/* Mobile Carousel Slider (visible only on mobile) */}
-            <div className="md:hidden relative flex items-center w-full group">
+            {/* Unified Carousel Slider (visible on both desktop & mobile) */}
+            <div className="relative flex items-center w-full group">
               
               {/* Left Chevron Button */}
               <button
                 onClick={scrollLeft}
-                className="absolute left-0 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+                className="absolute left-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
                 aria-label="Scroll left"
               >
                 <span className="material-symbols-outlined text-[20px] font-black">chevron_left</span>
@@ -150,7 +134,7 @@ export default function LatestProducts({
                 }}
               >
                 {latestItems.map((product) => (
-                  <div key={`latest-mob-${product.id}`} className="w-[190px] flex-shrink-0 snap-start">
+                  <div key={`latest-${product.id}`} className="w-[190px] flex-shrink-0 snap-start">
                     <ProductCard
                       product={product}
                       onViewDetails={onViewDetails}
@@ -167,7 +151,7 @@ export default function LatestProducts({
               {/* Right Chevron Button */}
               <button
                 onClick={scrollRight}
-                className="absolute right-0 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+                className="absolute right-0 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
                 aria-label="Scroll right"
               >
                 <span className="material-symbols-outlined text-[20px] font-black">chevron_right</span>

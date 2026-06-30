@@ -90,7 +90,7 @@ export default function FeaturedCategories({
             onClick={() => {
               document.getElementById("search-filter-section")?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="text-trade-navy hover:text-trade-orange text-xs font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-trade-navy hover:text-primary-blue text-xs font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
           >
             View All
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
@@ -103,7 +103,7 @@ export default function FeaturedCategories({
           {/* Left Chevron Button */}
           <button
             onClick={scrollLeft}
-            className="absolute left-0 md:left-2 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+            className="absolute left-0 md:left-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
             aria-label="Scroll left"
           >
             <span className="material-symbols-outlined text-[20px] font-black">chevron_left</span>
@@ -149,7 +149,7 @@ export default function FeaturedCategories({
 
                   {/* Centered label */}
                   <span className={`text-[11.5px] font-bold text-center leading-tight transition-colors line-clamp-2 max-w-[100px] ${
-                    isActive ? "text-trade-orange font-black" : "text-trade-navy group-hover:text-trade-orange"
+                    isActive ? "text-trade-orange font-black" : "text-trade-navy group-hover:text-primary-blue"
                   }`}>
                     {cat.name}
                   </span>
@@ -161,7 +161,7 @@ export default function FeaturedCategories({
           {/* Right Chevron Button */}
           <button
             onClick={scrollRight}
-            className="absolute right-0 md:right-2 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+            className="absolute right-0 md:right-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
             aria-label="Scroll right"
           >
             <span className="material-symbols-outlined text-[20px] font-black">chevron_right</span>

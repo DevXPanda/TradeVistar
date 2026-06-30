@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React from "react";
 
 interface BrandInfo {
   name: string;
@@ -8,7 +8,6 @@ interface BrandInfo {
 }
 
 export default function TrustedBrands() {
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const brands: BrandInfo[] = [
     {
@@ -122,44 +121,7 @@ export default function TrustedBrands() {
   ];
 
   // Infinite duplicate list to ensure endless marquee feel
-  const brandList = [...brands, ...brands, ...brands];
-
-  // Auto-scrolling ticker hook
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    let animationFrameId: number;
-    const speed = 0.55; // Pixels per frame scroll speed
-
-    const scrollTicker = () => {
-      container.scrollLeft += speed;
-      // Loop back if reached near the end
-      if (container.scrollLeft >= (container.scrollWidth / 3) * 2) {
-        container.scrollLeft = container.scrollWidth / 3;
-      }
-      animationFrameId = requestAnimationFrame(scrollTicker);
-    };
-
-    // Initialize position in middle segment
-    container.scrollLeft = container.scrollWidth / 3;
-    animationFrameId = requestAnimationFrame(scrollTicker);
-
-    // Pause on hover
-    const pauseScroll = () => cancelAnimationFrame(animationFrameId);
-    const resumeScroll = () => {
-      animationFrameId = requestAnimationFrame(scrollTicker);
-    };
-
-    container.addEventListener("mouseenter", pauseScroll);
-    container.addEventListener("mouseleave", resumeScroll);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      container.removeEventListener("mouseenter", pauseScroll);
-      container.removeEventListener("mouseleave", resumeScroll);
-    };
-  }, []);
+  const brandList = [...brands, ...brands];
 
   return (
     <section className="bg-white py-10 px-s-md border-b border-outline-variant/20" id="popular-brands-section">
@@ -174,7 +136,7 @@ export default function TrustedBrands() {
             onClick={() => {
               document.getElementById("search-filter-section")?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="text-trade-navy hover:text-trade-orange text-xs font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-trade-navy hover:text-primary-blue text-xs font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
           >
             View All
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
@@ -182,23 +144,22 @@ export default function TrustedBrands() {
         </div>
 
         {/* Endless Auto-scroll Container */}
-        <div
-          ref={scrollRef}
-          className="w-full overflow-x-auto py-2 flex gap-6 scrollbar-none"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
-          {brandList.map((brand, index) => (
-            <div
-              key={`${brand.name}-${index}`}
-              className="w-20 h-20 rounded-full border border-outline-variant/15 bg-white shadow-xs hover:shadow-md hover:border-trade-orange flex-shrink-0 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 select-none"
-              title={`View ${brand.name}`}
-            >
-              {brand.logo}
-            </div>
-          ))}
+        <div className="w-full overflow-hidden py-2 relative">
+          {/* Gradient shadows to fade edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+
+          <div className="flex w-max animate-marquee hover:[animation-play-state:paused] gap-6">
+            {brandList.map((brand, index) => (
+              <div
+                key={`${brand.name}-${index}`}
+                className="w-20 h-20 rounded-full border border-outline-variant/15 bg-white shadow-xs hover:shadow-md hover:border-primary-blue flex-shrink-0 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 select-none"
+                title={`View ${brand.name}`}
+              >
+                {brand.logo}
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>

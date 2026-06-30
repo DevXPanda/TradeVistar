@@ -14,9 +14,9 @@ export default function TopNavBar() {
     { name: "Home", href: "/", hasDropdown: false },
     { name: "Brand", href: "#popular-brands-section", hasDropdown: false },
     { name: "Offers", href: "#", hasDropdown: true },
-    { name: "Publication House", href: "#", hasDropdown: false },
-    { name: "All Vendors", href: "#", hasDropdown: false },
-    { name: "Vendor Zone", href: "#", hasDropdown: true },
+    { name: "Delhi", href: "#", hasDropdown: true },
+    { name: "Sellers", href: "#", hasDropdown: false },
+    { name: "Seller Zone", href: "#", hasDropdown: true },
   ];
 
   return (
@@ -50,7 +50,7 @@ export default function TopNavBar() {
 
           {/* Search Box (Centered - Desktop only) */}
           <div className="hidden md:flex flex-grow max-w-[500px] mx-6">
-            <div className="flex w-full border border-trade-orange rounded-lg overflow-hidden transition-colors">
+            <div className="flex w-full border border-primary-blue focus-within:border-secondary-blue rounded-lg overflow-hidden transition-colors">
               <input
                 type="text"
                 placeholder="Search for items..."
@@ -58,7 +58,7 @@ export default function TopNavBar() {
                 onChange={(e) => setSearchVal(e.target.value)}
                 className="flex-grow px-4 py-2 text-[13px] text-trade-navy bg-slate-50/50 outline-none placeholder:text-secondary/50 font-medium"
               />
-              <button className="bg-trade-orange hover:bg-trade-navy text-white px-5 flex items-center justify-center transition-colors cursor-pointer">
+              <button className="bg-primary-blue hover:bg-secondary-blue text-white px-5 flex items-center justify-center transition-colors cursor-pointer">
                 <span className="material-symbols-outlined text-[18px]">search</span>
               </button>
             </div>
@@ -136,7 +136,7 @@ export default function TopNavBar() {
       {/* Mobile Search Overlay */}
       {showMobileSearch && (
         <div className="md:hidden bg-white px-4 py-2 border-b border-outline-variant/10">
-          <div className="flex w-full border border-trade-orange rounded-lg overflow-hidden transition-colors">
+          <div className="flex w-full border border-primary-blue focus-within:border-secondary-blue rounded-lg overflow-hidden transition-colors">
             <input
               type="text"
               placeholder="Search for items..."
@@ -144,15 +144,15 @@ export default function TopNavBar() {
               onChange={(e) => setSearchVal(e.target.value)}
               className="flex-grow px-4 py-2 text-[13px] text-trade-navy bg-slate-50/50 outline-none placeholder:text-secondary/50 font-medium"
             />
-            <button className="bg-trade-orange hover:bg-trade-navy text-white px-5 flex items-center justify-center transition-colors cursor-pointer">
+            <button className="bg-primary-blue hover:bg-secondary-blue text-white px-5 flex items-center justify-center transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-[18px]">search</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* 2. Sub-Navbar (Orange Background - Desktop only) */}
-      <div className="hidden md:flex bg-trade-orange h-[46px] px-s-md items-center">
+      {/* 2. Sub-Navbar (Primary Blue Background - Desktop only) */}
+      <div className="hidden md:flex bg-primary-blue h-[46px] px-s-md items-center">
         <div className="max-w-s-container-max mx-auto w-full flex justify-between items-center h-full">
           
           {/* Left Block: Categories Dropdown & Links */}
@@ -162,41 +162,41 @@ export default function TopNavBar() {
             <div className="relative h-full flex items-center">
               <button
                 onClick={() => setShowCategoryMenu(!showCategoryMenu)}
-                className="bg-white text-trade-navy rounded-t-lg px-4 h-full flex items-center gap-2 font-black uppercase text-[11.5px] tracking-wide border-x border-t border-outline-variant/10 cursor-pointer shadow-xs"
+                className="bg-white text-primary-blue rounded px-3 py-1.5 flex items-center gap-2 font-bold text-[12.5px] cursor-pointer shadow-xs border border-outline-variant/10"
               >
-                <span className="material-symbols-outlined text-[16px] font-bold">grid_view</span>
+                <span className="material-symbols-outlined text-[16px] font-bold">apps</span>
                 <span>Categories</span>
-                <span className="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>
+                <span className="material-symbols-outlined text-[14px] font-bold">arrow_drop_down</span>
               </button>
 
               {/* Mock Dropdown items */}
               {showCategoryMenu && (
-                <div className="absolute left-0 top-[46px] w-[200px] bg-white border border-outline-variant/15 rounded-b-xl shadow-lg z-50 py-2">
+                <div className="absolute left-0 top-[38px] w-[200px] bg-white border border-outline-variant/15 rounded-md shadow-lg z-50 py-2">
                   <Link
                     href="#category-collections-section"
                     onClick={() => setShowCategoryMenu(false)}
-                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-primary-blue"
                   >
                     Women&apos;s Fashion
                   </Link>
                   <Link
                     href="#category-collections-section"
                     onClick={() => setShowCategoryMenu(false)}
-                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-primary-blue"
                   >
                     Men&apos;s Fashion
                   </Link>
                   <Link
                     href="#category-collections-section"
                     onClick={() => setShowCategoryMenu(false)}
-                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-primary-blue"
                   >
                     Phone & Gadgets
                   </Link>
                   <Link
                     href="#category-collections-section"
                     onClick={() => setShowCategoryMenu(false)}
-                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-trade-orange"
+                    className="block px-4 py-2 text-[12px] text-trade-navy font-bold hover:bg-slate-50 hover:text-primary-blue"
                   >
                     Home & Kitchen
                   </Link>
@@ -205,19 +205,80 @@ export default function TopNavBar() {
             </div>
 
             {/* Navigation links */}
-            <div className="hidden lg:flex items-center gap-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-white/95 hover:text-trade-navy text-[12px] font-black uppercase tracking-wide flex items-center gap-0.5 transition-colors cursor-pointer"
-                >
-                  <span>{link.name}</span>
-                  {link.hasDropdown && (
-                    <span className="material-symbols-outlined text-[12px]">keyboard_arrow_down</span>
-                  )}
-                </Link>
-              ))}
+            <div className="hidden lg:flex items-center gap-6 h-full">
+              {navLinks.map((link) => {
+                if (link.name === "Seller Zone") {
+                  return (
+                    <div key={link.name} className="relative group/seller h-full flex items-center">
+                      <button
+                        className="text-white/95 hover:text-secondary-blue text-[13px] font-semibold flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <span>Seller Zone</span>
+                        <span className="material-symbols-outlined text-[12px]">keyboard_arrow_down</span>
+                      </button>
+                      
+                      {/* Dropdown Menu */}
+                      <div className="absolute right-0 top-[38px] w-[140px] bg-white border border-outline-variant/15 rounded-md shadow-lg z-50 py-1.5 opacity-0 invisible group-hover/seller:opacity-100 group-hover/seller:visible transition-all duration-200">
+                        <Link
+                          href="/seller/register"
+                          className="block px-3 py-1.5 text-[11px] text-left text-slate-800 font-bold hover:bg-slate-50 hover:text-primary-blue"
+                        >
+                          Become a seller
+                        </Link>
+                        <Link
+                          href="/seller/login"
+                          className="block px-3 py-1.5 text-[11px] text-left text-slate-800 font-bold hover:bg-slate-50 hover:text-primary-blue"
+                        >
+                          Seller Login
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (link.name === "Offers") {
+                  return (
+                    <div key={link.name} className="relative group/offers h-full flex items-center">
+                      <button className="text-white/95 hover:text-secondary-blue text-[13px] font-semibold flex items-center gap-0.5 transition-colors cursor-pointer">
+                        <span>Offers</span>
+                        <span className="material-symbols-outlined text-[12px]">keyboard_arrow_down</span>
+                      </button>
+                      <div className="absolute left-0 top-[38px] w-[140px] bg-white border border-outline-variant/15 rounded-md shadow-lg z-50 py-1.5 opacity-0 invisible group-hover/offers:opacity-100 group-hover/offers:visible transition-all duration-200">
+                        <Link href="#" className="block px-3 py-1.5 text-[11px] text-slate-800 font-bold hover:bg-slate-50 hover:text-primary-blue">Flash Deals</Link>
+                        <Link href="#" className="block px-3 py-1.5 text-[11px] text-slate-800 font-bold hover:bg-slate-50 hover:text-primary-blue">Bulk Discounts</Link>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (link.name === "Delhi") {
+                  return (
+                    <div key={link.name} className="relative group/delhi h-full flex items-center">
+                      <button className="text-white/95 hover:text-secondary-blue text-[13px] font-semibold flex items-center gap-0.5 transition-colors cursor-pointer">
+                        <span>Delhi</span>
+                        <span className="material-symbols-outlined text-[12px]">keyboard_arrow_down</span>
+                      </button>
+                      <div className="absolute left-0 top-[38px] w-[140px] bg-white border border-outline-variant/15 rounded-md shadow-lg z-50 py-1.5 opacity-0 invisible group-hover/delhi:opacity-100 group-hover/delhi:visible transition-all duration-200">
+                        <Link href="#" className="block px-3 py-1.5 text-[11px] text-slate-800 font-bold hover:bg-slate-50 hover:text-primary-blue">Delhi NCR</Link>
+                        <Link href="#" className="block px-3 py-1.5 text-[11px] text-slate-800 font-bold hover:bg-slate-50 hover:text-primary-blue">New Delhi</Link>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="text-white/95 hover:text-secondary-blue text-[13px] font-semibold flex items-center gap-0.5 transition-colors cursor-pointer"
+                  >
+                    <span>{link.name}</span>
+                    {link.hasDropdown && (
+                      <span className="material-symbols-outlined text-[12px]">keyboard_arrow_down</span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
 
           </div>
@@ -263,28 +324,28 @@ export default function TopNavBar() {
                 <Link
                   href="#category-collections-section"
                   onClick={() => setShowMobileMenu(false)}
-                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-primary-blue"
                 >
                   Women&apos;s Fashion
                 </Link>
                 <Link
                   href="#category-collections-section"
                   onClick={() => setShowMobileMenu(false)}
-                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-primary-blue"
                 >
                   Men&apos;s Fashion
                 </Link>
                 <Link
                   href="#category-collections-section"
                   onClick={() => setShowMobileMenu(false)}
-                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-primary-blue"
                 >
                   Phone & Gadgets
                 </Link>
                 <Link
                   href="#category-collections-section"
                   onClick={() => setShowMobileMenu(false)}
-                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange"
+                  className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-primary-blue"
                 >
                   Home & Kitchen
                 </Link>
@@ -297,7 +358,7 @@ export default function TopNavBar() {
                     key={link.name}
                     href={link.href}
                     onClick={() => setShowMobileMenu(false)}
-                    className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-trade-orange uppercase"
+                    className="block px-2 py-1 text-[13px] text-trade-navy font-bold hover:text-primary-blue uppercase"
                   >
                     {link.name}
                   </Link>

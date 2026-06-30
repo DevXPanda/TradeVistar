@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fcf8fa;
+  --background: #FCFCFC;
   --foreground: #1b1b1d;
 
   /* Responsive typography custom properties */
@@ -58,8 +58,8 @@
 @theme {
   --font-sans: var(--font-inter), Roboto, sans-serif;
   --color-secondary: #515f75;
-  --color-surface-container: #f0edef;
-  --color-surface: #fcf8fa;
+  --color-surface-container: #F4F4F6;
+  --color-surface: #FCFCFC;
   --color-on-secondary-fixed-variant: #3a475d;
   --color-surface-variant: #e4e2e4;
   --color-on-tertiary-container: #d95f00;
@@ -69,7 +69,7 @@
   --color-on-surface-variant: #45464d;
   --color-tertiary: #000000;
   --color-on-error: #ffffff;
-  --color-surface-container-low: #f6f3f5;
+  --color-surface-container-low: #F9F9FB;
   --color-on-primary-fixed: #131b2e;
   --color-inverse-primary: #bec6e0;
   --color-surface-dim: #dcd9db;
@@ -86,11 +86,11 @@
   --color-error: #ba1a1a;
   --color-primary-fixed-dim: #bec6e0;
   --color-tertiary-fixed-dim: #ffb690;
-  --color-background: #fcf8fa;
+  --color-background: #FCFCFC;
   --color-on-primary-container: #7c839b;
   --color-error-container: #ffdad6;
   --color-primary-container: #131b2e;
-  --color-surface-bright: #fcf8fa;
+  --color-surface-bright: #FCFCFC;
   --color-on-secondary-container: #57657c;
   --color-on-surface: #1b1b1d;
   --color-on-tertiary-fixed-variant: #783200;
@@ -104,8 +104,88 @@
   --color-on-error-container: #93000a;
   --color-surface-container-high: #eae7e9;
   --color-secondary-container: #d5e3fe;
-  --color-trade-navy: #0F172A;
-  --color-trade-orange: #F97316;
+  
+  /* Brand color additions */
+  --color-primary-blue: #034FA6;
+  --color-secondary-blue: #0399ED;
+  --color-primary-green: #1E932D;
+  --color-primary-orange: #EC5D03;
+  --color-accent-gold: #FC9D05;
+  --color-white: #FCFCFC;
+  --color-dark-navy: #032B64;
+  
+  --color-trade-navy: #032B64;
+  --color-trade-orange: #EC5D03;
+
+  /* Standard color palette mapping overrides */
+  --color-blue-50: #E5F4FD;
+  --color-blue-100: #CCEAFD;
+  --color-blue-200: #99D4FA;
+  --color-blue-300: #66BFF8;
+  --color-blue-400: #33A9F5;
+  --color-blue-500: #0399ED;
+  --color-blue-600: #034FA6;
+  --color-blue-700: #023D82;
+  --color-blue-800: #022C5C;
+  --color-blue-900: #011C3D;
+
+  --color-orange-50: #FDF2EB;
+  --color-orange-100: #FCE5D6;
+  --color-orange-200: #FACBAB;
+  --color-orange-300: #F7B180;
+  --color-orange-400: #F59755;
+  --color-orange-500: #EC5D03;
+  --color-orange-600: #BD4A02;
+  --color-orange-700: #8E3802;
+  --color-orange-800: #5F2501;
+  --color-orange-900: #2F1301;
+
+  --color-green-50: #ECF7ED;
+  --color-green-100: #D9EFDB;
+  --color-green-200: #B3DFB7;
+  --color-green-300: #8ECE93;
+  --color-green-400: #68BE6F;
+  --color-green-500: #1E932D;
+  --color-green-600: #187624;
+  --color-green-700: #12581B;
+  --color-green-800: #0C3B12;
+  --color-green-900: #061D09;
+
+  --color-emerald-50: #ECF7ED;
+  --color-emerald-100: #D9EFDB;
+  --color-emerald-200: #B3DFB7;
+  --color-emerald-300: #8ECE93;
+  --color-emerald-400: #68BE6F;
+  --color-emerald-500: #1E932D;
+  --color-emerald-600: #187624;
+  --color-emerald-700: #12581B;
+  --color-emerald-800: #0C3B12;
+  --color-emerald-900: #061D09;
+
+  --color-amber-50: #FFFDF5;
+  --color-amber-100: #FFFCEB;
+  --color-amber-200: #FFF9D6;
+  --color-amber-300: #FFF5B3;
+  --color-amber-400: #FFF090;
+  --color-amber-500: #FC9D05;
+  --color-amber-600: #CA7E04;
+  --color-amber-700: #975E03;
+  --color-amber-800: #653F02;
+  --color-amber-900: #321F01;
+
+  --color-yellow-50: #FFFDF5;
+  --color-yellow-100: #FFFCEB;
+  --color-yellow-200: #FFF9D6;
+  --color-yellow-300: #FFF5B3;
+  --color-yellow-400: #FFF090;
+  --color-yellow-500: #FC9D05;
+  --color-yellow-600: #CA7E04;
+  --color-yellow-700: #975E03;
+  --color-yellow-800: #653F02;
+  --color-yellow-900: #321F01;
+
+  --color-slate-900: #032B64;
+  --color-zinc-900: #032B64;
 
   /* Custom Stitch spacing variables (prefixed with s- to prevent utility overrides) */
   --spacing-s-base: 4px;
@@ -181,6 +261,13 @@
   --text-label-sm--line-height: 16px;
   --text-label-sm--letter-spacing: 0em;
   --text-label-sm--font-weight: 500;
+
+  --animate-marquee: marquee 35s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 }
 
 /* Custom styling tokens from the Stitch design system */

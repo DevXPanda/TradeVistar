@@ -145,11 +145,11 @@ export default function TopVerifiedSuppliers() {
         <div className="relative flex items-center group">
           
           {/* Left Chevron Button */}
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 md:left-2 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
-            aria-label="Scroll left"
-          >
+            <button
+              onClick={scrollLeft}
+              className="absolute left-0 md:left-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+              aria-label="Scroll left"
+            >
             <span className="material-symbols-outlined text-[20px] font-black">chevron_left</span>
           </button>
 
@@ -219,7 +219,7 @@ export default function TopVerifiedSuppliers() {
                 <div className="px-4 pb-3.5 flex flex-col justify-between flex-grow relative pt-8">
                   {/* Name and Rating */}
                   <div className="pl-[64px]">
-                    <h3 className="font-headline-md text-[13.5px] text-trade-navy font-bold leading-tight truncate group-hover:text-trade-orange transition-colors">
+                    <h3 className="font-headline-md text-[13.5px] text-trade-navy font-bold leading-tight truncate group-hover:text-primary-blue transition-colors">
                       {supplier.name}
                     </h3>
                     
@@ -260,7 +260,7 @@ export default function TopVerifiedSuppliers() {
           {/* Right Chevron Button */}
           <button
             onClick={scrollRight}
-            className="absolute right-0 md:right-2 z-20 w-10 h-10 rounded-full bg-trade-orange hover:bg-trade-navy text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
+            className="absolute right-0 md:right-2 z-20 w-10 h-10 rounded-full bg-primary-blue hover:bg-secondary-blue text-white flex items-center justify-center shadow-lg active:scale-95 cursor-pointer opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto transition-all duration-300 border border-white/10"
             aria-label="Scroll right"
           >
             <span className="material-symbols-outlined text-[20px] font-black">chevron_right</span>

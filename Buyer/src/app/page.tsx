@@ -3,7 +3,9 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { getProductSlug } from "@/lib/product/productHelpers";
 
 // Core Layout & Section Components
 import TopNavBar from "@/components/sections/TopNavBar";
@@ -30,6 +32,7 @@ import { Product, MOCK_PRODUCTS } from "@/data/products";
 import { MEDICAL_PRODUCTS, AUTOMOTIVE_PRODUCTS } from "@/components/sections/IndustryCollections";
 
 export default function Home() {
+  const router = useRouter();
   // Simulated logged-in state default to Rajesh K., Buildcon Projects (as shown in requirements/B2B context)
   const isLoggedIn = true;
 
@@ -81,13 +84,12 @@ export default function Home() {
 
   // Modal Handlers
   const handleViewDetails = (product: Product) => {
-    setActiveModal({ type: "details", product });
-    
     // Add to recently viewed list dynamically
     setRecentlyViewedIds((prev) => {
       const filtered = prev.filter((id) => id !== product.id);
       return [product.id, ...filtered].slice(0, 8); // Keep up to 8 recently viewed
     });
+    router.push(`/products/${getProductSlug(product.name)}`);
   };
 
   const handleQuoteRequest = (product: Product) => {

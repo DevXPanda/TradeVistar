@@ -2,12 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Product } from "@/data/products";
+import { getProductSlug } from "@/lib/product/productHelpers";
 
 interface ProductCardProps {
   product: Product;
-  onViewDetails: (product: Product) => void;
+  onViewDetails?: (product: Product) => void;
   onQuote: (product: Product) => void;
   onBuyNow: (product: Product) => void;
   onChat: (product: Product) => void;
@@ -32,6 +34,17 @@ export default function ProductCard({
   isCompact = false,
   hideStars = false,
 }: ProductCardProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleCardClick = () => {
+    const slug = getProductSlug(product.name);
+    if (pathname && pathname.startsWith("/buyerportal")) {
+      router.push(`/buyerportal/products/${slug}`);
+    } else {
+      router.push(`/products/${slug}`);
+    }
+  };
   if (isCompact) {
     const discountedPrice = discountPercentage 
       ? Math.round(product.priceMin * (1 - discountPercentage / 100)) 
@@ -39,7 +52,7 @@ export default function ProductCard({
 
     return (
       <div
-        onClick={() => onViewDetails(product)}
+        onClick={handleCardClick}
         className="w-full h-[300px] flex-shrink-0 bg-white border border-outline-variant/15 rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between group relative cursor-pointer snap-start mx-auto"
       >
         {/* Discount / Badges */}
@@ -63,7 +76,7 @@ export default function ProductCard({
         {/* Info */}
         <div className="p-3 flex-grow flex flex-col justify-between text-center space-y-2">
           <div className="space-y-1">
-            <h3 className="font-headline-md text-[12.5px] text-trade-navy font-bold leading-tight line-clamp-2 group-hover:text-trade-orange transition-colors">
+            <h3 className="font-headline-md text-[12.5px] text-trade-navy font-bold leading-tight line-clamp-2 group-hover:text-primary-blue transition-colors">
               {product.name}
             </h3>
             <p className="font-display-lg text-[13.5px] text-trade-navy font-black">
@@ -103,7 +116,7 @@ export default function ProductCard({
   return (
     <motion.div
       layoutId={`product-card-${product.id}`}
-      className={`bg-white border border-outline-variant/30 rounded-xl overflow-hidden hover:border-trade-orange/40 hover:-translate-y-0.5 transition-all duration-300 flex flex-col group relative ${
+      className={`bg-white border border-outline-variant/30 rounded-xl overflow-hidden hover:border-primary-blue/40 hover:-translate-y-0.5 transition-all duration-300 flex flex-col group relative ${
         isFlashDeal ? "w-[280px]" : "w-full"
       }`}
     >
@@ -136,7 +149,7 @@ export default function ProductCard({
 
       {/* Image Frame */}
       <div
-        onClick={() => onViewDetails(product)}
+        onClick={handleCardClick}
         className="relative w-full aspect-square bg-surface-container-low overflow-hidden cursor-pointer block border-b border-outline-variant/10"
       >
         <Image
@@ -171,8 +184,8 @@ export default function ProductCard({
 
           {/* Product Title */}
           <h3
-            onClick={() => onViewDetails(product)}
-            className="font-headline-md text-[13px] text-trade-navy font-extrabold leading-tight line-clamp-2 hover:text-trade-orange transition-colors cursor-pointer"
+            onClick={handleCardClick}
+            className="font-headline-md text-[13px] text-trade-navy font-extrabold leading-tight line-clamp-2 hover:text-primary-blue transition-colors cursor-pointer"
           >
             {product.name}
           </h3>
@@ -236,8 +249,8 @@ export default function ProductCard({
         {/* Card Interactive Sourcing Buttons */}
         {isFlashDeal ? (
           <button
-            onClick={() => onViewDetails(product)}
-            className="w-full py-2 bg-trade-navy hover:bg-trade-orange text-white hover:text-white rounded-lg text-[11px] font-black uppercase tracking-wider text-center transition-all duration-300 block cursor-pointer"
+            onClick={handleCardClick}
+            className="w-full py-2 bg-trade-orange hover:bg-secondary-blue text-white hover:text-white rounded-lg text-[11px] font-black uppercase tracking-wider text-center transition-all duration-300 block cursor-pointer"
           >
             View Flash Deal
           </button>
@@ -245,7 +258,7 @@ export default function ProductCard({
           <div className="grid grid-cols-2 gap-1 pt-1.5">
             <button
               onClick={() => onQuote(product)}
-              className="px-1.5 py-1.5 bg-trade-orange/10 hover:bg-trade-orange text-trade-orange hover:text-white rounded-lg border border-trade-orange/20 text-[10px] font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
+              className="px-1.5 py-1.5 bg-primary-blue/10 hover:bg-primary-blue text-primary-blue hover:text-white rounded-lg border border-primary-blue/20 text-[10px] font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
               title="Request Quote"
             >
               <span className="material-symbols-outlined text-[11px]">request_quote</span>
@@ -261,7 +274,7 @@ export default function ProductCard({
             </button>
 
             <button
-              onClick={() => onViewDetails(product)}
+              onClick={handleCardClick}
               className="px-1 py-1.5 bg-white hover:bg-surface-container text-trade-navy rounded-lg border border-outline-variant text-[10px] font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
               title="View Details"
             >
@@ -269,7 +282,7 @@ export default function ProductCard({
             </button>
             <button
               onClick={() => onBuyNow(product)}
-              className="px-1 py-1.5 bg-trade-navy hover:bg-trade-navy/90 text-white rounded-lg text-[10px] font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
+              className="px-1 py-1.5 bg-trade-orange hover:bg-secondary-blue text-white rounded-lg text-[10px] font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-0.5 cursor-pointer"
               title="Buy Now"
             >
               Buy Now

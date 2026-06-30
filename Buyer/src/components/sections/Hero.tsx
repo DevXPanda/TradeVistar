@@ -15,14 +15,14 @@ export default function Hero() {
           </div> */}
           <h1 className="font-display-lg text-display-lg lg:text-display-lg text-trade-navy leading-tight w-full">
             <span className="text-trade-orange">India&apos;s</span> Trusted B2B Marketplace <br className="hidden lg:inline" />
-            <span className="text-trade-orange">for Bulk Buying, Faster Delivery</span>
+            <span className="text-primary-blue">for Bulk Buying, Faster Delivery</span>
           </h1>
           <p className="font-body-lg text-body-lg text-secondary max-w-xl mx-auto lg:mx-0 leading-relaxed">
             TradeVistar is India&apos;s digital B2B marketplace connecting manufacturers, suppliers, wholesalers, retailers,
             and resellers through seamless bulk buying, fast delivery, and business growth opportunities.
           </p>
           <div className="flex flex-col sm:flex-row gap-s-sm pt-s-xs w-full sm:w-auto justify-center lg:justify-start">
-            <button className="bg-trade-orange text-white px-6 sm:px-s-xl py-4 rounded-lg font-bold font-label-sm hover:translate-y-[-2px] hover:bg-trade-orange/90 transition-all active:scale-95 cursor-pointer w-full sm:w-auto">
+            <button className="bg-trade-orange text-white px-6 sm:px-s-xl py-4 rounded-lg font-bold font-label-sm hover:translate-y-[-2px] hover:bg-secondary-blue transition-all active:scale-95 cursor-pointer w-full sm:w-auto">
               Explore Infrastructure
             </button>
             <button className="border border-outline-variant px-6 sm:px-s-xl py-4 rounded-lg font-bold font-label-sm hover:bg-surface-variant transition-colors cursor-pointer w-full sm:w-auto">

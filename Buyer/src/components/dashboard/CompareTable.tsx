@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/data/products";
+import { getProductSlug } from "@/lib/product/productHelpers";
 
 interface CompareTableProps {
   compareItems: Product[];
@@ -50,7 +51,7 @@ export default function CompareTable({
                         {product.category}
                       </span>
                       <Link 
-                        href={`/products/${product.id}`}
+                        href={`/products/${getProductSlug(product.name)}`}
                         className="font-bold text-trade-navy hover:text-trade-orange hover:underline text-[12px] block mt-1 line-clamp-2 leading-tight"
                       >
                         {product.name}

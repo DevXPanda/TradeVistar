@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/data/products";
+import { getProductSlug } from "@/lib/product/productHelpers";
 
 interface WishlistGridProps {
   wishlistItems: Product[];
@@ -67,7 +68,7 @@ export default function WishlistGrid({
                   {product.category}
                 </span>
                 <Link
-                  href={`/products/${product.id}`}
+                  href={`/products/${getProductSlug(product.name)}`}
                   className="font-bold text-trade-navy text-[12.5px] leading-tight block hover:text-trade-orange transition-colors line-clamp-2"
                 >
                   {product.name}
